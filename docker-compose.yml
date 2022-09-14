@@ -1,0 +1,59 @@
+version: "3"
+
+services:
+  frontend:
+    tty: true
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: ./Docker/Dockerfile.front
+    image: eth-anony-front
+    container_name: eth-anony-front
+    ports:
+      - 8080:8080
+    volumes:
+      - ./front:/app/
+    env_file:
+      - ./env_files/front.env
+
+  backend:
+    tty: true
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: ./Docker/Dockerfile.back
+    image: eth-anony-back
+    container_name: eth-anony-back
+    ports:
+      - 9990:9990
+    volumes:
+      - ./back:/run/
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    build:
+      context: .
+      dockerfile: ./Docker/Dockerfile.db
+    image: eth-anony-db
+    container_name: eth-anony-db
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 1s
+      retries: 10
+      start_period: 3s
+      timeout: 20s
+    volumes:
+      - ./mysql/db:/var/lib/mysql #初期データをマウントする場所
+    ports:
+      - 3306:3306
+    env_file:
+      - ./env_files/db.env
+
+  mailhogserver:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - 8025:8025
+      - 1025:1025
