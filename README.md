@@ -1,6 +1,6 @@
 # name
-ano-eth
-(anonymous ethereum)
+eth-anony
+(ethereum anonymous)
 # Features
 
 仮想通貨で匿名評価と悪質な投稿防止する質問掲示板
