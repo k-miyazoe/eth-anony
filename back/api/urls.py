@@ -16,6 +16,9 @@ urlpatterns = [
     path('get-question/<pk>', QuestionGet.as_view()),
     path('create-question/', QuestionCreate.as_view()),
     path('update-question/<pk>/', QuestionUpdate.as_view()),
+    #回答数追加
+    path('add-num-answer/<pk>/',views.AddNumOfAnser),
+    #閲覧回数追加
     # path('search-question/<slug:flag>', QuestionSearch.as_view()),
     
     #Answer

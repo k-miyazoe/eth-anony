@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 function setHeader() {
     const csrftoken = Cookies.get("csrftoken");
-    let axios = Axios.create({
+    const axios = Axios.create({
         baseURL: process.env.VUE_APP_API_URL,
         timeout: 2500,
         headers: {

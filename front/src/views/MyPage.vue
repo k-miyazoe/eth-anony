@@ -42,24 +42,20 @@ export default {
         this.getUserInfo();
     },
     methods: {
-        //useridを取得
         checkToken() {
             this.$session.start();
-            if (this.$session.has("token")) {
-                this.uid = this.$session.get('user_id')
-                console.log('Mypage set uid', this.uid)
-            } else {
-                router.push('/signin')
+            if (!this.$session.has("token")) {
+                router.push("/signin");
             }
         },
         //user情報取得
         getUserInfo() {
-            //'users/<pk>/'
+            const user_id = this.$session.get('user_id')
+            //class使えそう
             axios
-                .get(process.env.VUE_APP_API_URL + "/api/users/" + this.uid)
+                .get(process.env.VUE_APP_API_URL + "/api/users/" + user_id)
                 .then((res) => {
                     this.user_info = res.data
-                    console.log('MyPage.vue getUserInfo() user_info', this.user_info)
                 })
                 .catch((e) => {
                     console.log(e);

@@ -81,7 +81,7 @@ export default {
     },
     routerPushCreateQuestion() {
       this.$router.push('/create-question')
-    }
+    },
   },
 }
 </script>

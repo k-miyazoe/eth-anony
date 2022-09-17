@@ -108,14 +108,22 @@ def PointUp(request,pk):
             'result':"point up"
         }
     return JsonResponse(result)
-    
+
+#回答数増加機能[GETメソッドだと動く,本来はPUT]
+@csrf_exempt
+def AddNumOfAnser(request,pk):
+    Question.objects.filter(pk=pk).update(question_number_of_responses=F('question_number_of_responses') + 1)
+    result = {
+            'result':"add number of answer"
+        }
+    return JsonResponse(result);  
 
 #質問いいね機能
 @csrf_exempt
 def Questionlike(request):
     json_dict = json.loads(request.body)
-    get_question_id = json_dict['question_id']
     get_user_id = json_dict["user"]
+    get_question_id = json_dict['question_id']
     #ユーザーと質問のインスタンス生成
     user = User.objects.get(id=get_user_id)
     question = Question.objects.get(id=get_question_id)
@@ -190,18 +198,19 @@ def sendEmail(request):
     _message = json_dict["message"]
     #ダミーメールアドレスにしたい[余裕があれば]
     _from_email = "22726022@edu.cc.saga-u.ac.jp"
-    #ここから下の四行を変更
-    receipt_ether_id = json_dict["receipt_user_ether_id"]
-    _ether = Ether.objects.get(id=receipt_ether_id)
-    _user = _ether.user_id
-    receipt_email = _user.email
+    receipt_user_id = json_dict["receipt_user_id"]
+    _user = User.objects.get(id=receipt_user_id)
+    #ここが甘い
+    receipt_email = _user.user_email
     #送信先は引数で受け取る必要がある また複数に送信することを想定されているためlist型である
     _recipient_list = [
         receipt_email
     ]
-    
+    obj = {
+        "email": _user.user_email,
+    }
     send_mail(_subject, _message, _from_email, _recipient_list, fail_silently=False)
-    return  JsonResponse('email send',safe=False)
+    return  JsonResponse(obj,safe=False)
 
 #イーサリアムアドレス作成処理[未完成]
 ############################################################################
