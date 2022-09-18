@@ -99,6 +99,12 @@ export default {
     this.checkToken();
   },
   methods: {
+    checkToken() {
+      this.$session.start();
+      if (this.$session.has("token")) {
+        router.push("/");
+      }
+    },
     signUp() {
       if (this.$refs.form.validate()) {
         this.loading = true;
@@ -139,12 +145,6 @@ export default {
           this.credentials.password = ""
           this.check_password = ""
         }
-      }
-    },
-    checkToken() {
-      this.$session.start();
-      if (this.$session.has("token")) {
-        router.push("/");
       }
     },
     checkPassword(pass1, pass2) {

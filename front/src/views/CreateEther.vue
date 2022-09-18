@@ -20,6 +20,7 @@ import header from "/src/node/axios";
 
 
 const axios = header.setHeader();
+const user_id = 0;
 
 export default {
   components: {
@@ -39,32 +40,24 @@ export default {
   },
   created() {
     this.checkToken();
-    axiosHeader();
   },
   mounted() {
     this.getUserGroup()
   },
   methods: {
     checkToken() {
-      console.log('Create Ether start 1')
-      this.$session.start();
-      //tokenを所持しているなら
       if (this.$session.has("token")) {
-        this.userId = this.$session.get('user_id')
+        user_id = this.$session.get('user_id')
         this.username = this.$session.get('user_name')
       }
-      //所持していないなら
       else {
         router.push("/signin");
       }
     },
-    axiosHeader() {
-      axios = header.setHeader();
-    },
     //groupを取得する
     getUserGroup() {
       axios
-        .get(process.env.VUE_APP_API_URL + "/app/users/" + this.userId + "/")
+        .get(process.env.VUE_APP_API_URL + "/app/users/" + user_id + "/")
         .then((res) => {
           this.user_group = res.data.user_group
           this.checkUserName()
@@ -88,7 +81,7 @@ export default {
     initEtherObject() {
       console.log('2 initEtherObject start')
       let ether_obj = {
-        user_id: this.userId,
+        user_id: user_id,
         //質問・回答の際表示される名前
         user_name: this.ether_user_name,
         ether_wallet: 0,

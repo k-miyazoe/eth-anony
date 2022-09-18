@@ -1,17 +1,14 @@
 import Swal from "sweetalert2";
 
-const api_url = process.env.VUE_APP_API_URL
-
 const User = class {
-  //コンストラクタにuser_nameは必要あるか?
-  constructor(user, user_name) {
-    this.user = user
-    this.user_name = user_name
-  };
-  //未完成
+  constructor(user_id, axios) {
+    this.user_id = user_id;
+    this.axios = axios;
+  }
+  //ここではデータは取得できているs
   getUserData() {
-    axios
-      .put(api_url + "/api/users/" + this.user)
+    this.axios
+      .get("/api/users/" + this.user_id)
       .then((res) => {
         return res.data;
       })
@@ -19,28 +16,22 @@ const User = class {
         console.log(e);
       });
   }
-  //引数を確認する objを受け取る[未]
-  sendPoint() {
-    let update_obj = this.createPutObject()
+  sendPoint(point_get_user) {
     this.axios
-      .put(api_url + "/api/users/" + this.user, update_obj)
-      .then((res) => {
-        //pointを受け取りました表示
-        console.log(res);
+      .put("/api/point-up/" + point_get_user + "/")
+      .then(() => {
+        console.log("ポイントを追加しました");
       })
       .catch((e) => {
         console.log(e);
       });
   }
-  //objを受けとる
-  sendEther() {
-    send_object = this.userObject
-    send_object.ether_stock = send_object.ether_stock + 1;
-    console.log(ether_point)
-    this.axios.put(api_url + "/api/users/" + this.userId, send_object)
-      .then((res) => {
-        //etherを受け取りました表示
-        console.log(res);
+  //backendの方も未完成
+  sendEther(ether_get_user) {
+    this.axios
+      .put("/api/users/" + ether_get_user + "/")
+      .then(() => {
+        console.log("ether get");
       })
       .catch((e) => {
         console.log(e);
@@ -49,25 +40,171 @@ const User = class {
 };
 
 const Question = class {
-  //objごと渡す事で可変長引数にする
-  constructor(question, axios, user_id) {
-    this.question = question
-    this.axios = axios
-    this.user_id = user_id
-  };
-  //質問を取得[全体 or 未解決] 関数作成
-  getall(){
-    console.log('質問取得')
-  };
-  //一部を取得
-  getOne(){
-    console.log('一部を取得')
-  };
-  post() {
+  constructor(axios) {
+    this.axios = axios;
+  }
+  //質問を取得[全体 or 未解決] 未使用未完成
+  getAll() {
+    console.log("質問取得");
+  }
+  //一部を取得 ここは未使用
+  async getOne(question_id) {
+    await this.axios
+      .get("/api/get-question/" + question_id)
+      .then((res) => {
+        console.log("class res.data", res.data);
+        return res.data;
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+  post(question) {
     this.axios
-      .post(api_url + "/api/create-question/", this.question)
+      .post("/api/create-question/", question)
       .then(() => {
-        console.log('質問投稿しました')
+        console.log("質問投稿しました");
+      })
+      .catch(() => {
+        Swal.fire({
+          icon: "warning",
+          title: "Error",
+          text: "入力が正しくありません",
+          showConfirmButton: false,
+          showCloseButton: false,
+          timer: 3000,
+        });
+      });
+  }
+  successMessage() {
+    Swal.fire("Goo job!", "success");
+  }
+  pointUp(question_user_id) {
+    this.axios
+      .put("/api/point-up/" + question_user_id + "/")
+      .then(() => {
+        console.log("point up");
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+  //質問の回答数追加
+  addNumberOfAnswers(question_id) {
+    this.axios
+      .put("/api/add-num-answer/" + question_id + "/")
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+  //new
+  //質問者 高評価point
+  rewardPoint() {
+    console.log("reward");
+  }
+  likeQuestion() {
+    console.log("like question");
+  }
+  //質問解決 未完成
+  resolvedQuestion(now_user_id,question_user_id,answer,best_answer) {
+            //質問者の場合
+            if (now_user_id == question_user_id) {
+                //回答が存在する場合
+                //ここのifのじょうけんがうまくいってない
+                if (answer.length != 0) {
+                    //ベストアンサーが存在しているなら
+                    if (best_answer) {
+                        //解決処理
+                        const resolve = {
+                            user: question_user_id,
+                            question_status: true
+                        }
+                        this.axios
+                            .put("/api/update-question/" + this.question_id + "/", resolve)
+                            .then(() => {
+                                Swal.fire(
+                                    '質問が解決されました!',
+                                    'success',
+                                )
+                            })
+                            .catch((e) => {
+                                console.log(e);
+                            });
+                    }
+                    //ベストアンサーが存在してない場合
+                    else {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Error",
+                            text: "ベストアンサーが存在しません．ベストアンサーを選択してください!",
+                            showConfirmButton: false,
+                            showCloseButton: false,
+                            timer: 3000,
+                        });
+                    }
+                }
+                //回答がない場合
+                else {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Error",
+                        text: "回答が存在しません.自己解決した場合、自身で回答を作成してください",
+                        showConfirmButton: false,
+                        showCloseButton: false,
+                        timer: 3000,
+                    });
+                }
+            }
+            //質問者以外
+            else {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Error",
+                    text: "質問者のみ有効です！",
+                    showConfirmButton: false,
+                    showCloseButton: false,
+                    timer: 3000,
+                });
+            }
+  }
+  //質問解決取り消し 未完成
+  releaseResolvedQuestion() {
+  }
+};
+
+const Answer = class {
+  //コンストラクタのひきすうにquestion_idがあってもいい
+  constructor(axios) {
+    this.axios = axios;
+  };
+  getAnswer(question_id) {
+    this.axios
+      .get("/api/get-answer/" + question_id)
+      .then((res) => {
+        return res.data;
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+  hasBestAnswer(answer) {
+    let best_answer_decision = false;
+    for (let item of answer) {
+      if (item.answer_best == true) {
+        console.log("ベストアンサーあり");
+        best_answer_decision = true;
+      }
+    }
+    return best_answer_decision;
+  };
+  postAnswer(answer) {
+    this.axios
+      .post("/api/create-answer/", answer)
+      .then((res) => {
+        console.log(res);
       })
       .catch(() => {
         Swal.fire({
@@ -80,26 +217,6 @@ const Question = class {
         });
       });
   };
-  successMessage() {
-    Swal.fire(
-      'Goo job!',
-      'success',
-    )
-  };
-  //test未確認
-  pointUp() {
-     this.axios
-        .post(api_url + "/api/point-up/" + this.user_id)
-        .then(() => {
-            console.log("point up")
-        })
-        .catch((e) => {
-            console.log(e)
-        });
-  };
 };
 
-const Answer = class {
-};
-
-export {User, Question};
+export { User, Question, Answer };

@@ -63,10 +63,10 @@ import VueLoading from 'vue-loading-template'
 import Header from "../components/Header.vue";
 import NavHelpBar from "../components/NavigationHelpBar.vue"
 import header from "/src/node/axios";
-import { User, Question } from "/src/node/class";
+import { Question } from "/src/node/class";
 
 const axios = header.setHeader();
-const user_id = this.$session.get('user_id');
+let user_id = 0;
 
 export default {
   components: {
@@ -80,8 +80,8 @@ export default {
       dialog: false,
       valid: true,
       question_obj: {
-        "user": user_id,
-        "question_user_name": this.$session.get("user_name")
+        "user": this.$session.get('user_id'),
+        "question_user_name": this.$session.get("user_name"),
       },
       rules: {
         question_title: [
@@ -95,30 +95,21 @@ export default {
   },
   mounted() {
     this.checkToken();
-    this.getUserInfo();
   },
   methods: {
-    //初期化処理
     checkToken() {
-      this.$session.start();
       if (!this.$session.has("token")) {
         router.push("/signin");
       }
+      user_id = this.$session.get('user_id');
     },
-    //user_nameは必要ないかも
-    getUserInfo() {
-      const user = new User(user_id, this.$session.get("user_name"));
-    },
-
-    //イベント処理
-    //質問をする 
     postQuestion() {
       this.loading = true
-      const question = new Question(this.question_obj, axios, user_id);
-      question.post();
+      const question = new Question(axios);
+      question.post(this.question_obj);
       question.successMessage();
-      question.pointUp();
-      this.loading = false
+      question.pointUp(user_id);
+      this.loading = false;
       router.push('/')
     },
   }
