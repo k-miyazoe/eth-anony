@@ -109,7 +109,16 @@ def PointUp(request,pk):
         }
     return JsonResponse(result)
 
-#回答数増加機能[GETメソッドだと動く,本来はPUT]
+#質問閲覧カウント
+@csrf_exempt
+def AddViews(request,pk):
+    Question.objects.filter(pk=pk).update(question_views=F('question_views') + 1)
+    result = {
+            'result':"add views"
+        }
+    return JsonResponse(result);  
+
+#回答数増加機能
 @csrf_exempt
 def AddNumOfAnser(request,pk):
     Question.objects.filter(pk=pk).update(question_number_of_responses=F('question_number_of_responses') + 1)

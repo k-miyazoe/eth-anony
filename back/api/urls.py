@@ -16,6 +16,8 @@ urlpatterns = [
     path('get-question/<pk>', QuestionGet.as_view()),
     path('create-question/', QuestionCreate.as_view()),
     path('update-question/<pk>/', QuestionUpdate.as_view()),
+    #閲覧数追加
+    path('add-views-question/<pk>/', views.AddViews),
     #回答数追加
     path('add-num-answer/<pk>/',views.AddNumOfAnser),
     #閲覧回数追加
@@ -24,6 +26,7 @@ urlpatterns = [
     #Answer
     path('get-answer/<int:question_id>/', AnswerGet.as_view()),
     path('create-answer/', AnswerCreate.as_view()),
+    #bestanswer処理など
     path('update-answer/<pk>/', AnswerUpdate.as_view()),
     
     #Point

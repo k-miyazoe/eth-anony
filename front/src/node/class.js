@@ -16,25 +16,22 @@ const User = class {
         console.log(e);
       });
   }
-  //引数を確認する objを受け取る 変更必要
-  sendPoint() {
-    const update_obj = {};
+  sendPoint(point_get_user) {
     this.axios
-      .put("/api/users/" + this.user_id, update_obj)
-      .then((res) => {
-        console.log(res);
+      .put("/api/point-up/" + point_get_user + "/")
+      .then(() => {
+        console.log("ポイントを追加しました");
       })
       .catch((e) => {
         console.log(e);
       });
   }
-  //objを受けとる 大きく変更必要
-  sendEther() {
-    const send_object = {};
+  //backendの方も未完成
+  sendEther(ether_get_user) {
     this.axios
-      .put("/api/users/" + this.user_id, send_object)
-      .then((res) => {
-        console.log(res);
+      .put("/api/users/" + ether_get_user + "/")
+      .then(() => {
+        console.log("ether get");
       })
       .catch((e) => {
         console.log(e);

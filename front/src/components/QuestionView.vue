@@ -13,7 +13,7 @@
                     <v-card class="mx-auto" max-height="344">
                         <v-col class="mb-10">
                             <!--質問タイトル-->
-                            <v-card-title>質問 {{ one_quesiton.question_title }} 解決済み!
+                            <v-card-title class="resolved_question_text">質問 {{ one_quesiton.question_title }} 解決済み!
                                 <v-card-subtitle>質問者:{{ one_quesiton.question_user_name }}</v-card-subtitle>
                             </v-card-title>
                             <!--質問内容-->
@@ -175,7 +175,8 @@ const axios = header.setHeader();
 let now_user_id = 0;
 let now_user_name = "";
 let question_id = 0;
-let best_answer = false;
+//おそらくこのbest_answerは意味を成してない
+let best_answer = null;
 let UserClass = null;
 const QuestionClass = new Question(axios);
 const AnswerClass = new Answer(axios);
@@ -190,7 +191,6 @@ export default {
             one_quesiton: {},
             any_answer: [],
             answer_obj: {},
-            best_answer_has: false,
             dialog: false,
             valid: true,
             loading: false,
@@ -205,7 +205,9 @@ export default {
         await this.checkToken()
         await this.getOneQuestion()
         await this.getAnyAnswer()
-        await this.getHasBestAnswer()
+        //コメントアウトを後で外す
+        //await this.addViewsQuestion()
+        //await this.checkHasBestAnswer()
     },
     methods: {
         checkToken() {
@@ -218,7 +220,7 @@ export default {
         },
         //質問取得
         getOneQuestion() {
-            question_id = this.$route.params.id
+            question_id = Number(this.$route.params.id)
             axios
                 .get("/api/get-question/" + question_id)
                 .then((res) => {
@@ -230,7 +232,6 @@ export default {
         },
         //回答高評価との依存関係
         getAnyAnswer() {
-            question_id = this.$route.params.id
             axios
                 .get("/api/get-answer/" + question_id)
                 .then((res) => {
@@ -239,34 +240,50 @@ export default {
                 .catch((e) => {
                     console.log(e);
                 });
+            console.log('回答取得')
         },
-        //あってない
-        async getHasBestAnswer() {
-            best_answer = await AnswerClass.hasBestAnswer(this.any_answer);
-            console.log('best_answer',best_answer)
+        //booleanを返す
+        checkHasBestAnswer() {
+            for (let item of this.any_answer) {
+                if (item.answer_best == true) {
+                    console.log("ベストアンサーあり");
+                    best_answer = true;
+                }
+            }
+            return best_answer;
+        },
+        //閲覧数増加 ok
+        addViewsQuestion() {
+            axios
+                .put("/api/add-views-question/" + question_id + "/")
+                .then(() => {
+                    console.log('閲覧数追加')
+                })
+                .catch((e) => {
+                    console.log(e);
+                });
         },
         //以下 イベント処理
 
-        //回答送信 sendPoint以外ok
+        //回答送信 回答が即時反映されない
         async postAnswer() {
             this.loading = true
             this.answer_obj["user"] = now_user_id
             this.answer_obj["answer_user_name"] = now_user_name;
             this.answer_obj["question_id"] = question_id;
             await AnswerClass.postAnswer(this.answer_obj);
-            // classの方が未完成
-            // await UserClass.sendPoint();
-            this.getAnyAnswer();
+            await UserClass.sendPoint(now_user_id);
             await QuestionClass.addNumberOfAnswers(question_id);
-            this.sendEmailQuestioner(this.answer_obj.answer_content)
+            this.sendEmailQuestioner(this.answer_obj.answer_content);
+            this.getAnyAnswer();
             this.dialog = false
             this.answer_obj = {}
             this.loading = false
         },
-        //質問したユーザーに対して，ポイントを送る[高評価を受けた場合] questionclass
+        //質問したユーザーに対して，ポイントを送る[高評価を受けた場合] 未完成 questionclass
         putSendPoint() {
             axios
-                .put(api_url + "/api/users/" + now_user_id + "/", update_obj)
+                .put("/api/users/" + now_user_id + "/", update_obj)
                 .then((res) => {
                     console.log(res);
                 })
@@ -281,7 +298,7 @@ export default {
                 question_id: this.one_quesiton.id,
             }
             axios
-                .put(api_url + "/api/question-like/", question_like)
+                .put("/api/question-like/", question_like)
                 .then(() => {
                     console.log('評価が変更されました')
                     this.getOneQuestion()
@@ -290,26 +307,27 @@ export default {
                     console.log(e);
                 });
         },
-        //質問解決 questionclass ベストアンサー処理と依存
+        //質問解決 questionclass ok
         resolvedQuestion() {
             //質問者の場合
             if (now_user_id == this.one_quesiton.user) {
                 //回答が存在する場合
                 if (this.any_answer.length != 0) {
                     //ベストアンサーが存在しているなら
-                    if (best_answer) {
+                    if (this.checkHasBestAnswer()) {
                         //解決処理
                         const resolve = {
-                            user: question_user_id,
+                            user: this.one_quesiton.user,
                             question_status: true
                         }
-                        this.axios
+                        axios
                             .put("/api/update-question/" + question_id + "/", resolve)
                             .then(() => {
                                 Swal.fire(
                                     '質問が解決されました!',
                                     'success',
                                 )
+                                this.getOneQuestion();
                             })
                             .catch((e) => {
                                 console.log(e);
@@ -351,16 +369,16 @@ export default {
                 });
             }
         },
-        //質問解決解除 questionclass
+        //質問解決解除 questionclass ok
         releaseResolvedQuestion() {
-            if (this.etherId == this.one_quesiton.ether_id) {
-                let release_resolve_obj = {
-                    ether_id: this.one_quesiton.ether_id,
+            if (now_user_id == this.one_quesiton.user) {
+                const release_resolve_obj = {
+                    user: this.one_quesiton.user,
                     question_status: false
                 }
                 axios
-                    .put(api_url + "/api/update-question/" + this.question_id + "/", release_resolve_obj)
-                    .then((res) => {
+                    .put("/api/update-question/" + question_id + "/", release_resolve_obj)
+                    .then(() => {
                         Swal.fire(
                             '解決を取り消しました!',
                             'success',
@@ -400,10 +418,11 @@ export default {
                     console.log(e);
                 });
         },
-        //bestanswer処理　answerclass dataのbest_answerを変更 ここの確認
+        //bestanswerの二つの処理は一つにできる
+        //bestanswer処理　answerclass ok
         bestAnswer(answer) {
-            //bestアンサーがすでに存在している場合
-            if (this.best_answer_has) {
+            //bestアンサーがすでに存在している場合 ここが動いてない
+            if (this.checkHasBestAnswer()) {
                 Swal.fire({
                     icon: "warning",
                     title: "Error",
@@ -419,14 +438,13 @@ export default {
                 if (now_user_id == this.one_quesiton.user) {
                     const answer_update_obj = {
                         user: this.one_quesiton.user,
-                        question_id: this.question_id,
+                        question_id: question_id,
                         answer_best: true
                     }
                     axios
-                        .put(api_url + "/api/update-answer/" + answer.id + "/", answer_update_obj)
-                        .then((res) => {
-                            this.best_answer_has = true
-                            console.log(res);
+                        .put("/api/update-answer/" + answer.id + "/", answer_update_obj)
+                        .then(() => {
+                            best_answer = true;
                             Swal.fire(
                                 'ベストアンサーを決定しました!',
                                 'success',
@@ -437,7 +455,6 @@ export default {
                         .catch((e) => {
                             console.log(e);
                         });
-
                 }
                 //質問者でないユーザーはできない
                 else {
@@ -452,18 +469,18 @@ export default {
                 }
             }
         },
-        //bestanswer解除処理 answerclass dataのbest_answerを変更
+        //bestanswer解除処理 answerclass ok
         releaseBestAnswer(answer) {
-            if (now_user_id == this.one_quesiton.user) {
-                let answer_release_obj = {
+            if (now_user_id == this.one_quesiton.user && !this.one_quesiton.question_status) {
+                const not_best_answer = {
+                    user: this.one_quesiton.user,
                     question_id: question_id,
                     answer_best: false
                 }
                 axios
-                    .put(api_url + "/api/update-answer/" + answer.id + "/", answer_release_obj)
-                    .then((res) => {
-                        this.best_answer_has = false
-                        console.log(res);
+                    .put(api_url + "/api/update-answer/" + answer.id + "/", not_best_answer)
+                    .then(() => {
+                        best_answer = false;
                         Swal.fire(
                             'ベストアンサーを解除しました!',
                             'success',
@@ -474,14 +491,13 @@ export default {
                     .catch((e) => {
                         console.log(e);
                     });
-
             }
             //質問者でないユーザーはできない
             else {
                 Swal.fire({
                     icon: "warning",
                     title: "Error",
-                    text: "質問者のみベストアンサーを解除できます",
+                    text: "質問者のみベストアンサーを解除できます.また解決済みの場合ベストアンサーは解除できません",
                     showConfirmButton: false,
                     showCloseButton: false,
                     timer: 3000,
@@ -514,7 +530,10 @@ export default {
 </script>
 <style>
 .best_answer_text {
-    color: gold;
+    background-color: gold;
+}
+.resolved_question_text {
+    background-color: aquamarine;
 }
 
 /* 例 */
