@@ -1,5 +1,6 @@
 import Swal from "sweetalert2";
 
+
 const User = class {
   constructor(user_id, axios) {
     this.user_id = user_id;

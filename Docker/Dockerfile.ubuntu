@@ -1,0 +1,16 @@
+FROM ubuntu:18.04
+ 
+WORKDIR /geth
+
+ENV PORT=9090
+
+RUN \
+    apt update && \
+    apt -y upgrade && \
+    apt install -y build-essential && \
+    apt install -y software-properties-common && \
+    apt install -y curl git man unzip vim wget sudo
+ 
+RUN add-apt-repository -y ppa:ethereum/ethereum
+RUN apt-get update
+RUN apt-get install -y ethereum
