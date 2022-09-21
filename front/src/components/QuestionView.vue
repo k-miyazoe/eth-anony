@@ -523,7 +523,14 @@ export default {
                     console.log(e)
                 });
         },
+        //web3.js test func ok
+        web3(){
+            const Web3 = require("web3");
+            const web3 = new Web3("http://localhost:9090");
+            web3.eth.isMining().then(console.log);
+        },
         log() {
+            this.web3();
         }
     },
 }
