@@ -1,6 +1,9 @@
 <template>
   <v-app>
     <Header />
+    <v-btn color="primary" @click="log">
+      log button
+    </v-btn>
     <v-container grid-list-md>
       <v-layout row wrap align-center justify-center fill-height>
         <v-flex xs12 sm8 lg4 md5>
@@ -61,6 +64,15 @@ import Header from "../components/Header.vue";
 
 const axios = header.setHeader();
 
+const Web3 = require("web3");
+const web3 = new Web3(process.env.VUE_APP_GETH_API);
+const miner = "0x0fcA84baf65fB28dDFeA1B71e66DA579144cbB55";
+//const miner = process.env.VUE_APP_MINER;
+const miner_password = "admin";
+//const miner_password = process.env.VUE_APP_MINER_PASS;
+let create_ether = {};
+
+
 export default {
   components: {
     Header,
@@ -105,6 +117,7 @@ export default {
         router.push("/");
       }
     },
+    //ここは長すぎるから関数にきりわける
     signUp() {
       if (this.$refs.form.validate()) {
         this.loading = true;
@@ -154,7 +167,90 @@ export default {
         return false
       }
     },
-    test_log() {
+
+    //new
+
+    //ethアカウント作成はここだけ ok 処理に5秒程度時間がかかる
+    createEthAccount(password){
+      web3.eth.personal.newAccount(password).then(
+        (res) => {
+          //0x4118E288dD9317e45950F2A4E9403776F0aec728
+          //signin関数内で使用するオブジェクト
+          create_ether["adress"] = res;
+          create_ether["password"] = password;
+          console.log("etherアカウント作成ok", res);
+        },
+        (err) => {
+          console.log("error", err);
+        }
+      );
+    },
+    //5eth与える 二つのアカウントの合計で10ethの想定 関数の共通化ができる ok　受け取る関数
+    async initialEth(received_address,value) {
+      const from = await web3.utils.toChecksumAddress(miner);
+      const to = await web3.utils.toChecksumAddress(received_address);
+      const transaction = {
+        from: from,
+        to: to,
+        value: value,
+      };
+      await web3.eth.personal
+        .unlockAccount(from, miner_password, 15000)
+        .then(() => {
+          web3.eth.sendTransaction(transaction);
+        });
+      console.log("受け取り完了");
+    },
+    //共通処理 送る関数
+    async sendEth(sender_address,sender_pass,value) {
+      const from = await web3.utils.toChecksumAddress(sender_address);
+      const to = await web3.utils.toChecksumAddress(miner);
+      const transaction = {
+        from: from,
+        to: to,
+        value: value,
+        gasPrice: 0,
+      };
+      await web3.eth.personal
+        .unlockAccount(from, sender_pass, 15000)
+        .then(() => {
+          web3.eth.sendTransaction(transaction);
+        });
+      console.log("送金完了");
+    },
+    log() {
+      const new_account = "0x4118E288dD9317e45950F2A4E9403776F0aec728";
+      // // this.checkEth(new_account);
+      // // this.initialEth(new_account,1);
+      this.checkEth(new_account);
+      //this.sendEth(new_account,"test",1);
+    },
+    //メモ用関数
+    checkMining() {
+      web3.eth.isMining().then(console.log);
+    },
+    checkMinerAddress() {
+      web3.eth.getCoinbase().then(console.log);
+    },
+    showMinerEth() {
+      const miner = "0x0fca84baf65fb28ddfea1b71e66da579144cbb55"
+      web3.eth.getBalance(miner).then(console.log);
+    },
+    checkEthAccountNum() {
+      web3.eth.personal.getAccounts().then(
+        (data) => {
+          console.log("OK", data);
+        },
+        (err) => {
+          console.log("error", err);
+        }
+      );
+    },
+    checkEth(address) {
+      //0x4118E288dD9317e45950F2A4E9403776F0aec728
+      //const receive = "0x4118E288dD9317e45950F2A4E9403776F0aec728"
+      web3.eth.getBalance(address)
+      .then(console.log);
     },
   },
 };

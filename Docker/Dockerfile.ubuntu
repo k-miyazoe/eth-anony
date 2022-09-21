@@ -14,3 +14,7 @@ RUN \
 RUN add-apt-repository -y ppa:ethereum/ethereum
 RUN apt-get update
 RUN apt-get install -y ethereum
+
+# RUN nohup geth --networkid "15" --nodiscover --datadir . --http --http.addr 0.0.0.0 --http.port "9090" --http.api "eth,net,web3,personal,miner" --http.corsdomain '*' --allow-insecure-unlock >> ./log.out 2>&1 &
+
+# CMD [ "sh", "setup.sh" ]
