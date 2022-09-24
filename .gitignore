@@ -4,6 +4,9 @@ node_modules/
 db/
 *.env
 env_files/
+log.out
+geth/
+keystore/
 
 
 # local env files

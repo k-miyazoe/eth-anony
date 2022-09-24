@@ -8,7 +8,8 @@
             <v-card-title>
               <span class="headline">サインイン</span>
             </v-card-title>
-
+            <v-card-subtitle>
+              <span class="notes-text">学籍番号が偶数の方は実名アカウントで、奇数の方は匿名アカウントでサインインしてください</span></v-card-subtitle>
             <v-spacer />
 
             <v-card-text>
@@ -108,3 +109,10 @@ export default {
   },
 };
 </script>
+<style>
+.notes-text {
+  font-size: 15px;
+  /* color: #2196F3; */
+  color: red;
+}
+</style>
