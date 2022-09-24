@@ -29,7 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     #pkではなく、パスワード認証の際に使うもの 
     #user_keyは被った場合どうなるのか挙動を確認する
     user_key = models.CharField(default="",max_length=255,unique=True)
-    user_email = models.EmailField("メールアドレス", max_length=255)
+    user_email = models.EmailField("メールアドレス",default="",max_length=255)
     user_name = models.CharField("名前",default="",max_length=255)
     #変更箇所
     user_wallet = models.IntegerField(default=0)

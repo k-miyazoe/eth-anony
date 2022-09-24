@@ -205,9 +205,8 @@ export default {
         await this.checkToken()
         await this.getOneQuestion()
         await this.getAnyAnswer()
-        //コメントアウトを後で外す
-        //await this.addViewsQuestion()
-        //await this.checkHasBestAnswer()
+        await this.addViewsQuestion()
+        await this.checkHasBestAnswer()
     },
     methods: {
         checkToken() {
