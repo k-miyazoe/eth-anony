@@ -1,6 +1,9 @@
 <template>
   <v-app>
     <Header />
+    <v-btn color="primary" @click="log">
+          log button
+        </v-btn>
     <v-main>
       <NavHelpBar />
       <v-container>
@@ -43,8 +46,8 @@
                   閲覧者が理解できる質問になっていますか？
                 </v-card-text>
                 <v-form>
-                  <v-text-field type="password" v-model="eth_password" :counter="20" label="パスワード" :rules="rules.password"
-                    maxlength="20" required/>
+                  <v-text-field type="password" v-model="eth_password" :counter="10" label="パスワード" :rules="rules.password"
+                    maxlength="10" required/>
                 </v-form>
                 <v-divider></v-divider>
                 <v-card-actions>
@@ -79,6 +82,10 @@ let UserClass = null;
 const Web3 = require("web3");
 const web3 = new Web3(process.env.VUE_APP_GETH_API);
 const miner = process.env.VUE_APP_MINER;
+let g_question_flag = true;
+//後で消す
+//const miner_password = "admin"
+
 
 export default {
   components: {
@@ -111,7 +118,7 @@ export default {
   },
   mounted() {
     this.checkToken();
-    this.getUserPoint();
+    this.checkGeth();
   },
   methods: {
     checkToken() {
@@ -123,42 +130,39 @@ export default {
       user_group = this.$session.get("user_group");
       UserClass = new User(user_id, axios);
     },
-    async getUserPoint() {
-      const user_data = await UserClass.getUserData();
-      //なぜundefineかわからない
-      console.log('user', UserClass.getUserData());
-      //これがゴール
-      //user_point = user_data.user_point
-      //console.log('user_point', user_data.user_point);
-      //return user_data.user_point;
+    //ok
+    checkGeth() {
+      web3.eth.personal.getAccounts().then(
+        (data) => {
+          console.log("geth 起動中");
+        },
+        (err) => {
+          console.log("geth 停止中", err);
+          this.valid = false;
+        }
+      );
     },
     async postQuestion() {
       this.loading = true;
-      let flag = null;
       const question = new Question(axios);
-      //trueになっている
-      console.log('1 point消費', this.checkHasPoint());
-      flag = await question.pointDown(user_id, this.checkHasPoint());//ここの処理が動いていることがそもそもよくない
-      console.log('2 eth消費');
-      await this.ethDown(user_eth_address, 1, this.eth_password,flag);//ok
-      console.log('3 質問投稿[undefine]', flag);
-      flag = question.post(this.question_obj,flag);
-      console.log('4 成功か', flag);
-      question.successMessage(flag);
-      this.loading = false;
-      router.push('/');
+      await this.getHasEth(user_eth_address,1);
+      await this.ethDown(user_eth_address, 1, this.eth_password,g_question_flag);
+      question.post(this.question_obj,g_question_flag);
+      await question.pointDown(user_id);
+      this.questionResult(g_question_flag);
     },
-    //質問によるetherを消費
+    //
+    async getHasEth(address, check_ether) {
+      await web3.eth.getBalance(address)
+        .then((has_ether) => {
+          //順番が良くない説
+          console.log('所持eth', has_ether)
+          g_question_flag = (has_ether -check_ether > 0)
+        })
+    },
+    //質問によるetherを消費 eth_passが正しくない場合false 単体ok
     async ethDown(question_user_eth_address, eth, question_user_eth_password,flag) {
-      //Bグループの場合 スルーする
-      if(!user_group){
-        return true;
-      }
-      //ポイント処理がうまく行っていないならば
-      else if(!flag){
-        return false;
-      }
-      else if (this.canQuestion() && flag) {
+      if (flag) {
         const from = await web3.utils.toChecksumAddress(question_user_eth_address);
         const to = await web3.utils.toChecksumAddress(miner);
         const transaction = {
@@ -172,7 +176,6 @@ export default {
           .then(() => {
             web3.eth.sendTransaction(transaction);
             console.log("質問によるethの消費");
-            return true;
           })
           .catch(() => {
             Swal.fire({
@@ -183,59 +186,44 @@ export default {
               showCloseButton: false,
               timer: 3000,
             });
-            return false;
+            g_question_flag = false;
           });
       }
     },
-    //質問できるか判定 boolean
-    async canQuestion() {
-      const can_question = await this.getHasEth(user_eth_address,1);
-      if(can_question <= 0) {
-        Swal.fire({
-          icon: "warning",
-          title: "Error",
-          text: "ETHが足りていません",
-          showConfirmButton: false,
-          showCloseButton: false,
-          timer: 1000,
-        });
-        return false;
+    questionResult(result) {
+      if (result) {
+        Swal.fire("質問を投稿しました", "success");
+        router.push('/signin');
       } else {
-        return true;
-      }
-    },
-    //計算後のetherを返す
-    async getHasEth(address,check_ether) {
-      let has_ether = 0;
-      await web3.eth.getBalance(address)
-        .then((ether) => {
-          has_ether = ether;
-        })
-      return has_ether - check_ether;
-    },
-    checkHasPoint() {
-      //user_pointが定義されていない なぜかuser_pointが1になっている
-      //sessionで取得した情報は更新されない! バグの危険性
-      //user_pointを変更
-      console.log("check point",user_point);
-      if (user_point <= 0) {
         Swal.fire({
           icon: "warning",
           title: "Error",
-          text: "error",
+          text: "質問できませんでした",
           showConfirmButton: false,
           showCloseButton: false,
           timer: 3000,
         });
-        return false;
-      } else {
-        return true;
+        this.loading = false;
       }
     },
     async log() {
-      // await this.ethDown(user_eth_address, 1, "testether1");
-      // await this.initialEth(user_eth_address,100);
     },
+    //後で消す
+    // async initialEth(received_address, value) {
+    //   const from = await web3.utils.toChecksumAddress(miner);
+    //   const to = await web3.utils.toChecksumAddress(received_address);
+    //   const transaction = {
+    //     from: from,
+    //     to: to,
+    //     value: value,
+    //   };
+    //   await web3.eth.personal
+    //     .unlockAccount(from, miner_password, 15000)
+    //     .then(() => {
+    //       web3.eth.sendTransaction(transaction);
+    //       console.log("受け取り完了");
+    //     });
+    // },
   }
 }
 </script>

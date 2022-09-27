@@ -108,23 +108,16 @@ const Question = class {
         console.log(e);
       });
   }
-  //質問した際のpointダウン
-  async pointDown(question_user_id,flag) {
-    if(flag) {
-       await this.axios
-         .put("/api/point-down/" + question_user_id + "/")
-         .then(() => {
-           console.log("point down");
-           return true;
-         })
-         .catch((e) => {
-           console.log(e);
-           return false;
-         });
-    } else {
-      return false;
-    }
-   
+  //質問した際のpointダウン 返り値なし
+  async pointDown(question_user_id) {
+    await this.axios
+        .put("/api/point-down/" + question_user_id + "/")
+        .then(() => {
+          console.log("point down");
+        })
+        .catch((e) => {
+          console.log(e);
+        });
   }
   //質問の回答数追加
   addNumberOfAnswers(question_id) {

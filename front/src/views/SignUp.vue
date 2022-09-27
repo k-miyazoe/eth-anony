@@ -355,51 +355,6 @@ export default {
     },
     async log() {
     },
-
-    //メモ用関数
-    //共通処理 送る関数 ok
-    async sendEth(sender_address,sender_pass,value) {
-      const from = await web3.utils.toChecksumAddress(sender_address);
-      const to = await web3.utils.toChecksumAddress(miner);
-      const transaction = {
-        from: from,
-        to: to,
-        value: value,
-        gasPrice: 0,
-      };
-      await web3.eth.personal
-        .unlockAccount(from, sender_pass, 15000)
-        .then(() => {
-          web3.eth.sendTransaction(transaction);
-        });
-      console.log("送金完了");
-    },
-    checkMining() {
-      web3.eth.isMining().then(console.log);
-    },
-    checkMinerAddress() {
-      web3.eth.getCoinbase().then(console.log);
-    },
-    showMinerEth() {
-      const miner = "0x0fca84baf65fb28ddfea1b71e66da579144cbb55"
-      web3.eth.getBalance(miner).then(console.log);
-    },
-    checkEthAccountNum() {
-      web3.eth.personal.getAccounts().then(
-        (data) => {
-          console.log("OK", data);
-        },
-        (err) => {
-          console.log("error", err);
-        }
-      );
-    },
-    checkEth(address) {
-      //0x4118E288dD9317e45950F2A4E9403776F0aec728
-      //const receive = "0x4118E288dD9317e45950F2A4E9403776F0aec728"
-      web3.eth.getBalance(address)
-      .then(console.log);
-    },
   },
 };
 </script>

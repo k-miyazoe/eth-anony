@@ -94,7 +94,7 @@ export default {
             Swal.fire({
               icon: "warning",
               title: "Error",
-              text: "メールアドレスもしくはパスワード、または両方が間違っています",
+              text: "ユーザーIDもしくはパスワード、または両方が間違っています",
               showConfirmButton: false,
               showCloseButton: false,
               timer: 3000,
