@@ -30,7 +30,8 @@ urlpatterns = [
     path('update-answer/<pk>/', AnswerUpdate.as_view()),
     
     #Point
-    path('point-up/<pk>/', views.PointUp),
+    path('point-up/<int:user_id>/', views.PointUp),
+    path('point-down/<int:user_id>/', views.PointDown),
     
     #Like
     path('question-like/', views.Questionlike),

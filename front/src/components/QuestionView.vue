@@ -146,6 +146,10 @@
                                 回答は削除できません．あとから編集することは可能です．
                                 質問者が理解できる回答になっていますか？
                             </v-card-text>
+                            <v-form>
+                                <v-text-field type="password" v-model="eth_password" :counter="20" label="パスワード" :rules="rules.password"
+                                    maxlength="20" required />
+                            </v-form>
                             <v-divider></v-divider>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
@@ -170,16 +174,23 @@ import NavHelpBar from "../components/NavigationHelpBar.vue";
 import header from "/src/node/axios";
 import { User, Question, Answer } from "/src/node/class";
 
-const api_url = process.env.VUE_APP_API_URL;
 const axios = header.setHeader();
 let now_user_id = 0;
 let now_user_name = "";
 let question_id = 0;
-//おそらくこのbest_answerは意味を成してない
+let user_eth_address = "";
+let user_group = "";
+let user_point = 0;
+//おそらくこのbest_answerは意味を成してないかも
 let best_answer = null;
 let UserClass = null;
 const QuestionClass = new Question(axios);
 const AnswerClass = new Answer(axios);
+const Web3 = require("web3");
+const web3 = new Web3(process.env.VUE_APP_GETH_API);
+const miner = process.env.VUE_APP_MINER;
+const miner_password = process.env.VUE_APP_MINER_PASS;
+
 
 export default {
     components: {
@@ -191,12 +202,16 @@ export default {
             one_quesiton: {},
             any_answer: [],
             answer_obj: {},
+            eth_password: "",
             dialog: false,
             valid: true,
             loading: false,
             rules: {
                 answer_content: [
                     (v) => !!v || "回答内容は必須です",
+                ],
+                password: [
+                    (v) => !!v || "パスワードを入力してください",
                 ],
             },
         };
@@ -215,6 +230,9 @@ export default {
             }
             now_user_id = this.$session.get('user_id');
             now_user_name = this.$session.get('user_name');
+            user_eth_address = this.$session.get('user_eth_address');
+            user_group = this.$session.get('user_group');
+            user_point = this.$session.get('user_point');
             UserClass = new User(now_user_id, axios);
         },
         //質問取得
@@ -241,7 +259,7 @@ export default {
                 });
             console.log('回答取得')
         },
-        //booleanを返す
+        //ベストアンサーがあるか確認 booleanを返す
         checkHasBestAnswer() {
             for (let item of this.any_answer) {
                 if (item.answer_best == true) {
@@ -264,16 +282,23 @@ export default {
         },
         //以下 イベント処理
 
-        //回答送信 回答が即時反映されない
+        //回答送信 回答が即時反映されない　point or ethの消費
         async postAnswer() {
             this.loading = true
+            //回答情報をまとめる
             this.answer_obj["user"] = now_user_id
             this.answer_obj["answer_user_name"] = now_user_name;
             this.answer_obj["question_id"] = question_id;
+            //回答する eth pointがない場合解凍できないようにする必要がある
             await AnswerClass.postAnswer(this.answer_obj);
-            await UserClass.sendPoint(now_user_id);
+            //new
+            //A ethの消費
+            await this.ethDown(user_eth_address,1,this.eth_password);
+            //A・B point消費
+            this.pointDown(now_user_id);
             await QuestionClass.addNumberOfAnswers(question_id);
             this.sendEmailQuestioner(this.answer_obj.answer_content);
+            //画面更新
             this.getAnyAnswer();
             this.dialog = false
             this.answer_obj = {}
@@ -407,7 +432,7 @@ export default {
                 answer_id: this.any_answer[answer_index].id
             }
             axios
-                .post(api_url + "/api/answer-like/", answer_like_obj)
+                .post("/api/answer-like/", answer_like_obj)
                 .then((res) => {
                     console.log(res);
                     console.log('評価が変更されました')
@@ -477,7 +502,7 @@ export default {
                     answer_best: false
                 }
                 axios
-                    .put(api_url + "/api/update-answer/" + answer.id + "/", not_best_answer)
+                    .put("/api/update-answer/" + answer.id + "/", not_best_answer)
                     .then(() => {
                         best_answer = false;
                         Swal.fire(
@@ -514,7 +539,7 @@ export default {
                 receipt_user_id: _user_id,
             }
             axios
-                .post(api_url + "/api/send-email/", _mail_obj)
+                .post("/api/send-email/", _mail_obj)
                 .then((res) => {
                     console.log(res)
                 })
@@ -522,14 +547,125 @@ export default {
                     console.log(e)
                 });
         },
-        //web3.js test func ok
-        web3(){
-            const Web3 = require("web3");
-            const web3 = new Web3("http://localhost:9090");
-            web3.eth.isMining().then(console.log);
+        //質問者回答者へ報酬を与える userclass?
+        async rewardEth(received_address,reward_eth) {
+            const from = await web3.utils.toChecksumAddress(miner);
+            const to = await web3.utils.toChecksumAddress(received_address);
+            const transaction = {
+                from: from,
+                to: to,
+                value: reward_eth,
+            };
+            await web3.eth.personal
+                .unlockAccount(from, miner_password, 15000)
+                .then(() => {
+                    web3.eth.sendTransaction(transaction);
+                    console.log("受け取り完了");
+                });
+        },
+        //userclass? ok
+        async ethDown(question_user_eth_address, cost_eth, question_user_eth_password) {
+            //偶数 匿名 true かつ 仮想通貨足りているか
+            const can_question = await this.canQuestion();
+            if (user_group && can_question) {
+                const from = await web3.utils.toChecksumAddress(question_user_eth_address);
+                const to = await web3.utils.toChecksumAddress(miner);
+                const transaction = {
+                    from: from,
+                    to: to,
+                    value: cost_eth,
+                    gasPrice: 0,
+                };
+                await web3.eth.personal
+                    .unlockAccount(from, question_user_eth_password, 15000)
+                    .then(() => {
+                        web3.eth.sendTransaction(transaction);
+                        console.log("回答によるethの消費");
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Error",
+                            text: "パスワードが正しくない可能性があります",
+                            showConfirmButton: false,
+                            showCloseButton: false,
+                            timer: 3000,
+                        });
+                    });
+            }
+        },
+        //ok ここeth pointまとめてよさそう
+        async canQuestion() {
+            const can_question = await this.getHasEth(user_eth_address, 1);
+            if (can_question <= 0) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Error",
+                    text: "ETHが足りていません",
+                    showConfirmButton: false,
+                    showCloseButton: false,
+                    timer: 1000,
+                });
+                return false;
+            } else {
+                return true;
+            }
+        },
+        //ok
+        async getHasEth(address, check_ether) {
+            let has_ether = 0;
+            await web3.eth.getBalance(address)
+                .then((ether) => {
+                    has_ether = ether;
+                })
+            return has_ether - check_ether;
+        },
+        //回答の際point消費 ok
+        pointDown(answer_user_id) {
+            if(this.checkHasPoint()){
+                axios
+                    .put("/api/point-down/" + answer_user_id + "/")
+                    .then(() => {
+                        console.log("point down");
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                    });
+            } else {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Error",
+                    text: "ポイントが足りていません",
+                    showConfirmButton: false,
+                    showCloseButton: false,
+                    timer: 1000,
+                });
+            }
+            
+        },
+        //ok
+        checkHasPoint() {
+            if(user_point <= 0){
+                return false;
+            } else {
+                return true;
+            }
+        },
+        whiletest() {
+            let flag = true;
+            while(flag) {
+                flag = true;
+                console.log('first');
+                flag = false;
+                console.log('second');
+            }
         },
         log() {
-            this.web3();
+            this.whiletest();
+          //this.ethDown(user_eth_address,1,"testether2");
+          //this.rewardEth(user_eth_address,100);
+          //console.log(this.checkHasPoint());
+          //this.pointDown(now_user_id);
         }
     },
 }

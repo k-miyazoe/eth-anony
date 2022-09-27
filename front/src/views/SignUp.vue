@@ -1,9 +1,11 @@
 <template>
   <v-app>
     <Header />
-    <v-btn color="primary" @click="log">
+    <!-- <v-btn color="primary" @click="log">
       log button
-    </v-btn>
+    </v-btn> -->
+    <v-text>ユーザーIDとパスワードは重要なのでメモをお願いします</v-text>
+    <v-text>実名アカウントとは違うユーザーID,パスワードを登録してください</v-text>
     <v-container grid-list-md>
       <v-layout row wrap align-center justify-center fill-height>
         <v-flex xs12 sm8 lg4 md5>
@@ -20,7 +22,7 @@
               <v-form v-else ref="form" v-model="valid" lazy-validation>
                 <v-container>
                   <v-text-field v-model="main_account.user_key" label="ユーザーID*(半角英数)" :rules="rules.user_key" required />
-                  <v-text-field type="password" v-model="main_account.password" :counter="20" label="パスワード*(半角英数)" :rules="rules.password"
+                  <v-text-field type="password" v-model="main_account.password" :counter="10" label="パスワード*(半角英数)" :rules="rules.password"
                     maxlength="10" required />
                   <!--確認用passoword-->
                   <v-text-field type="password" v-model="check_password_main" :counter="20" label="パスワード(確認用)*" :rules="rules.password"
@@ -37,6 +39,7 @@
             <v-card-title>
               <span class="headline">匿名アカウント</span>
             </v-card-title>
+            <v-card-subtitle>*実名アカウントとは違うユーザーID,パスワードを登録してください</v-card-subtitle>
             <v-spacer />
             <v-card-text>
               <v-layout row fill-height justify-center align-center v-if="loading">
@@ -46,10 +49,10 @@
               <v-form v-else ref="form" v-model="valid" lazy-validation>
                 <v-container>
                   <v-text-field v-model="sub_account.user_key" label="ユーザーID*(半角英数)" :rules="rules.user_key" required />
-                  <v-text-field type="password" v-model="sub_account.password" :counter="20" label="パスワード*(半角英数)"
+                  <v-text-field type="password" v-model="sub_account.password" :counter="10" label="パスワード*(半角英数)"
                     :rules="rules.password" maxlength="10" required />
                   <!--確認用passoword-->
-                  <v-text-field type="password" v-model="check_password_sub" :counter="20" label="パスワード(確認用)*" :rules="rules.password"
+                  <v-text-field type="password" v-model="check_password_sub" :counter="10" label="パスワード(確認用)*" :rules="rules.password"
                     maxlength="10" required />
                   <v-text-field v-model="sub_account.email" label="学籍番号メールアドレス(任意)"/>
                 </v-container>
@@ -75,11 +78,13 @@ import header from "/src/node/axios";
 import Header from "../components/Header.vue";
 
 const axios = header.setHeader();
-
 const Web3 = require("web3");
 const web3 = new Web3(process.env.VUE_APP_GETH_API);
 const miner = process.env.VUE_APP_MINER;
 const miner_password = process.env.VUE_APP_MINER_PASS;
+let g_main_eth_address = "";
+let g_sub_eth_address = "";
+
 
 
 export default {
@@ -112,6 +117,7 @@ export default {
   }),
   mounted() {
     this.checkToken();
+    this.checkGeth();
   },
   methods: {
     checkToken() {
@@ -120,51 +126,79 @@ export default {
         router.push("/");
       }
     },
+    //gethが動いてないとアカウント作成できないようにする ok
+    checkGeth() {
+      web3.eth.personal.getAccounts().then(
+        (data) => {
+          console.log("geth 起動中");
+        },
+        (err) => {
+          console.log("geth 停止中", err);
+          this.valid = false;
+        }
+      );
+    },
     async signUp() {
       this.loading = true;
       let flag = true;
-      while(flag){
-        console.log("signupのobjの中身", this.main_account, this.sub_account);
-        flag = this.checkForm();
-        flag = this.checkUserId();
-        flag = this.checkPassword(this.main_account.password,this.check_password_main);
-        flag = this.checkPassword(this.sub_account.password,this.check_password_sub);
-        //this.main_account.user_eth_addressがよろしくない
-        this.main_account.user_eth_address = await this.createEthAccount(this.main_account.password);
-        this.sub_account.user_eth_address =  await this.createEthAccount(this.sub_account.password);
-        await this.createAccount(this.main_account,100);
-        await this.createAccount(this.sub_account,0);
-        await this.initialEth(this.main_account.user_eth_address,100);
-        flag = false;
-      }
+      flag = this.checkForm();
+      flag = this.checkUserId(flag);
+      //正しいpasswordの入力か確認
+      flag = this.checkPassword(this.main_account.password,this.check_password_main,flag);
+      flag = this.checkPassword(this.sub_account.password,this.check_password_sub,flag);
+      //mainとsubのパスワードが一致してないか確認する関数
+      flag = this.checkMainSubPassword(this.main_account.password, this.sub_account.password);
+      await this.createEthAccount(this.main_account.password, flag,"main");
+      await this.createEthAccount(this.sub_account.password, flag,"sub");
+      flag = this.checkEthAddressType(g_main_eth_address,g_sub_eth_address);
+      console.log('check eth address typeのflag確認',flag)
+
+      await this.createAccount(this.main_account,100,flag,g_main_eth_address);
+      //flagがundefinedになる　-> subが作成されなくなる
+      console.log("5 createAccount main", flag);
+      await this.createAccount(this.sub_account,0,flag,g_sub_eth_address);
+      console.log("6 createAccount sub", flag);
+      await this.initialEth(g_main_eth_address,100,flag);
+      console.log("7 initialEth", flag);
       this.loading = false;
-      router.push('/signin');
+      this.signUpResult(flag);
     },
     //改めて動作テストの必要あり
     checkForm() {
       return this.$refs.form.validate();
     },
-    //実名と匿名のuserkeyの確認
-    checkUserId() {
-      if(this.main_account.user_key == this.sub_account.user_key){
-        Swal.fire({
-          icon: "warning",
-          title: "Error",
-          text: "ユーザーidが一致しています.どちらか変更してください",
-          showConfirmButton: false,
-          showCloseButton: false,
-          timer: 1000,
-        });
-        return false;
+    //実名と匿名のuserkeyの確認 うまく行ってない 
+    checkUserId(flag) {
+      if(flag){
+        if (this.main_account.user_key == this.sub_account.user_key) {
+          Swal.fire({
+            icon: "warning",
+            title: "Error",
+            text: "ユーザーidが一致しています.どちらか変更してください",
+            showConfirmButton: false,
+            showCloseButton: false,
+            timer: 1000,
+          });
+          return false;
+        } else {
+          return true;
+        }
       } else {
-        return true;
+        console.log('userkey checkなし')
+        return false;
       }
+      
     },
     //ok
-    checkPassword(pass1, pass2) {
-      if (pass1 == pass2) {
+    checkPassword(pass1, pass2, flag) {
+      if(!flag){
+        console.log('パスワードチェックなし')
+        return false;
+      }
+      else if (pass1 == pass2) {
         return true;
-      } else {
+      } 
+      else {
         Swal.fire({
           icon: "warning",
           title: "Error",
@@ -180,37 +214,114 @@ export default {
         return false;
       }
     },
-    //ok 予期せぬメールアドレスを使用する学生がいるかも..
-    getStudentNumber(saga_email_address) {
-      const student_number = saga_email_address.replace(/[^0-9]/g, '');
-      console.log('学籍番号抽出確認',student_number);
-      return student_number;
+    //mainとsubのパスワードが一致してないか確認 ok
+    checkMainSubPassword(main_pass, sub_pass) {
+      if (main_pass == sub_pass) {
+        Swal.fire({
+          icon: "warning",
+          title: "Error",
+          text: "実名アカウントもしくは匿名アカウントどちらかのパスワードを変更してください",
+          showConfirmButton: false,
+          showCloseButton: false,
+          timer: 3000,
+        });
+        return false
+      } else {
+        console.log('mainとsubパスワード重複なし')
+        return true;
+      }
     },
-    //ok 偶数番号がtrue
-    groupingAccount(student_number) {
-      if(student_number % 2 == 0) {
+    //ethアカウント作成  処理に5秒程度時間がかかる ok
+    async createEthAccount(password,flag,account_type) {
+      if(!flag){
+        console.log('ethアカウント生成しない')
+        return false;
+      }
+      await web3.eth.personal.newAccount(password).then(
+        (data) => {
+          if(account_type == "main"){
+            console.log("ethアカウント作成ok[main]", data,"ethアドレスの型",typeof(data));
+            g_main_eth_address = data;
+          } else {
+            console.log("ethアカウント作成ok[sub]", data, "ethアドレスの型", typeof (data));
+            g_sub_eth_address = data;
+          }
+          return true;
+        },
+        (err) => {
+            console.log("error", err);
+            return false;
+        }
+      );
+    },
+    //ethのアドレスの型を確認 正しくない場合アカウントを作成しない　ok
+    checkEthAddressType(main_eth_address, sub_eth_address) {
+      if (typeof (main_eth_address) == "string" && typeof (sub_eth_address) == "string") {
         return true;
       } else {
         return false;
       }
     },
-
-    //ethアカウント作成  処理に5秒程度時間がかかる
-    async createEthAccount(password) {
-      let ether_address = "";
-      await web3.eth.personal.newAccount(password).then(
-        (data) => {
-          console.log("etherアカウント作成ok", data);
-          ether_address = data;
-        },
-        (err) => {
-          console.log("error", err);
-        }
-      );
-      return ether_address
+    //ok 予期せぬメールアドレスを使用する学生がいるかも..
+    getStudentNumber(saga_email_address) {
+      const student_number = saga_email_address.replace(/[^0-9]/g, '');
+      console.log('学籍番号抽出確認', student_number);
+      return student_number;
     },
-    //100eth受け取る ok
-    async initialEth(received_address, value) {
+    //ok 偶数番号がtrue
+    groupingAccount(student_number) {
+      if (student_number % 2 == 0) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    //mainとsubを作成する(2回呼び出される)
+    async createAccount(account,point,flag,eth_address){
+      if(!flag){
+        console.log('アカウント生成しない')
+        Swal.fire({
+          icon: "warning",
+          title: "Error",
+          text: "アカウントが作成できませんでした",
+          showConfirmButton: false,
+          showCloseButton: false,
+          timer: 3000,
+        });
+        return false;
+      }
+      //初期のpointを与える
+      const student_num = this.getStudentNumber(this.main_account.user_email);
+      account.user_group = this.groupingAccount(student_num);
+      account.user_eth_password = account.password;
+      account.user_point = point;
+      account.user_eth_address = eth_address;
+      console.log("createAccount:",account)
+      await axios
+        .post("/api/create-user/", account)
+        .then(() => {
+          console.log("アカウント作成");
+          //ここが問題あり booleanを返せてない return flagでもだめ
+          return true;
+        })
+        .catch(() => {
+          Swal.fire({
+            icon: "warning",
+            title: "Error",
+            text: "入力が正しくありません",
+            showConfirmButton: false,
+            showCloseButton: false,
+            timer: 3000,
+          });
+          return false;
+        });
+    },
+    //100eth受け取る
+    async initialEth(received_address, value, flag) {
+      if (!flag) {
+        console.log('初期eth与えない')
+        return false;
+      }
       const from = await web3.utils.toChecksumAddress(miner);
       const to = await web3.utils.toChecksumAddress(received_address);
       const transaction = {
@@ -225,36 +336,24 @@ export default {
           console.log("受け取り完了");
         });
     },
-    //mainとsubを作成する(2回呼び出される) ok
-    async createAccount(account,point){
-      //初期のpointを与える
-      const student_num = this.getStudentNumber(this.main_account.user_email);
-      account.user_group = this.groupingAccount(student_num);
-      account.user_eth_password = account.password;
-      account.user_wallet = point;
-      account.user_point = point;
-      console.log("createAccount:",account)
-      await axios
-        .post("/api/create-user/", account)
-        .then(() => {
-          console.log("アカウント作成");
-        })
-        .catch(() => {
-          Swal.fire({
-            icon: "warning",
-            title: "Error",
-            text: "入力が正しくありません",
-            showConfirmButton: false,
-            showCloseButton: false,
-            timer: 3000,
-          });
+    //アカウント作成の結果を表示 ok
+    signUpResult(result) {
+      if (result) {
+        Swal.fire("アカウントを作成しました!", "success");
+        router.push('/signin');
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Error",
+          text: "アカウントの作成ができませんでした!ページを閉じて再度やり直してください",
+          showConfirmButton: false,
+          showCloseButton: false,
+          timer: 3000,
         });
+        this.loading = false;
+      }
     },
     async log() {
-      //this.initialEth("0xAba3feF8D1E8F837ee8134BF951AACD6cc100cf9",100);
-      //this.checkEth("0xAba3feF8D1E8F837ee8134BF951AACD6cc100cf9")
-      this.checkUserId();
-      
     },
 
     //メモ用関数

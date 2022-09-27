@@ -19,7 +19,7 @@
 
               <v-form v-else ref="form" v-model="valid" lazy-validation>
                 <v-container>
-                  <v-text-field v-model="credentials.user_key" label="ユーザーキー" :rules="rules.user_key" required />
+                  <v-text-field v-model="credentials.user_key" label="ユーザーID" :rules="rules.user_key" required />
 
                   <v-text-field type="password" v-model="credentials.password" :counter="20" label="パスワード"
                     :rules="rules.password" maxlength="20" required v-on:keydown.enter="signIn" />
@@ -57,7 +57,7 @@ export default {
     loading: false,
     rules: {
       user_key: [
-        (v) => !!v || "ユーザーキーは必須です",
+        (v) => !!v || "ユーザーIDは必須です",
       ],
       password: [
         (v) => !!v || "パスワードは必須です",
@@ -78,10 +78,13 @@ export default {
         axios
           .post(api_url + "/auth/", this.credentials)
           .then((res) => {
+            //ながすぎるので関数にあとでまとめる
             this.$session.start();
             this.$session.set("token", res.data.token);
             this.$session.set("user_id", res.data.user_id);
             this.$session.set("user_name", res.data.user_name);
+            this.$session.set("user_eth_address", res.data.user_eth_address);
+            this.$session.set("user_group" ,res.data.user_group);
             this.loading = false;
             router.push("/");
           })

@@ -7,13 +7,13 @@
                 <v-card>
                     <v-card-title>MyPage</v-card-title>
                     <v-card-text>
-                        ユーザー名: {{ user_info.username }}
+                        ユーザー名: {{ user_info.user_name }}
                     </v-card-text>
                     <v-card-text>
-                        所持通貨: {{ user_info.eth_stock }}
+                        所持: {{ user_info.user_wallet }} (ETH or Point)
                     </v-card-text>
                     <v-card-text>
-                        メールアドレス: {{ user_info.email }}
+                        メールアドレス: {{ user_info.user_email }}
                     </v-card-text>
                 </v-card>
             </v-container>
@@ -22,10 +22,12 @@
 </template>
 
 <script>
-import axios from "axios";
 import router from "../router";
 import Header from "../components/Header.vue";
 import NavHelpBar from "../components/NavigationHelpBar.vue"
+import header from "/src/node/axios";
+
+const axios = header.setHeader();
 
 export default {
     components: {
@@ -33,7 +35,6 @@ export default {
     },
     data: () => ({
         uid: "",
-        axios: {},
         user_id: null,
         user_info: {},
     }),
@@ -51,11 +52,10 @@ export default {
         //user情報取得
         getUserInfo() {
             const user_id = this.$session.get('user_id')
-            //class使えそう
             axios
-                .get(process.env.VUE_APP_API_URL + "/api/users/" + user_id)
+                .get("/api/users/" + user_id)
                 .then((res) => {
-                    this.user_info = res.data
+                    this.user_info = res.data;
                 })
                 .catch((e) => {
                     console.log(e);

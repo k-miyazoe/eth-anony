@@ -6,7 +6,6 @@ import SignIn from '../views/SignIn.vue'
 import MyPage from '../views/MyPage.vue'
 import Question from '../components/Question.vue'
 import QuestionView from '../components/QuestionView.vue'
-import CreateEther from '../views/CreateEther.vue'
 //import MyPage from '../views/Mypage.vue'
 import NotFoundComponent from '../components/NotFoundComponent.vue'
 
@@ -37,10 +36,6 @@ const routes = [
     component: QuestionView,
     props: true,
     name: "question-detail"
-  },
-  {
-    path: '/create-ether',
-    component: CreateEther,
   },
   {
     path: '/mypage',
