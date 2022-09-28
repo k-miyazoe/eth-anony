@@ -1,3 +1,0 @@
-personal.newAccount("admin")
-eth.coinbase
-miner.start()
