@@ -120,15 +120,17 @@ const Question = class {
         });
   }
   //質問の回答数追加
-  addNumberOfAnswers(question_id) {
-    this.axios
-      .put("/api/add-num-answer/" + question_id + "/")
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+  addNumberOfAnswers(question_id,flag) {
+    if(flag){
+      this.axios
+        .put("/api/add-num-answer/" + question_id + "/")
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
   }
   //new
   //質問者 高評価point
@@ -226,22 +228,24 @@ const Answer = class {
     }
     return best_answer_decision;
   }
-  postAnswer(answer) {
-    this.axios
-      .post("/api/create-answer/", answer)
-      .then((res) => {
-        console.log(res);
-      })
-      .catch(() => {
-        Swal.fire({
-          icon: "warning",
-          title: "Error",
-          text: "入力が正しくありません",
-          showConfirmButton: false,
-          showCloseButton: false,
-          timer: 3000,
+  postAnswer(answer,flag) {
+    if(flag) {
+      this.axios
+        .post("/api/create-answer/", answer)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch(() => {
+          Swal.fire({
+            icon: "warning",
+            title: "Error",
+            text: "入力が正しくありません",
+            showConfirmButton: false,
+            showCloseButton: false,
+            timer: 3000,
+          });
         });
-      });
+    }
   }
   pointDown(answer_user_id,flag) {
     if(flag) {

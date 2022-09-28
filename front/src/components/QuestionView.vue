@@ -147,8 +147,8 @@
                                 質問者が理解できる回答になっていますか？
                             </v-card-text>
                             <v-form>
-                                <v-text-field type="password" v-model="eth_password" :counter="20" label="パスワード" :rules="rules.password"
-                                    maxlength="20" required />
+                                <v-text-field type="password" v-model="eth_password" :counter="10" label="パスワード" :rules="rules.password"
+                                    maxlength="10" required />
                             </v-form>
                             <v-divider></v-divider>
                             <v-card-actions>
@@ -175,14 +175,13 @@ import header from "/src/node/axios";
 import { User, Question, Answer } from "/src/node/class";
 
 const axios = header.setHeader();
-let now_user_id = 0;
-let now_user_name = "";
+let user_id = 0;
+let user_name = "";
 let question_id = 0;
 let user_eth_address = "";
 let user_group = "";
-let user_point = 0;
 //おそらくこのbest_answerは意味を成してないかも
-let best_answer = null;
+let best_answer = false;
 let UserClass = null;
 const QuestionClass = new Question(axios);
 const AnswerClass = new Answer(axios);
@@ -190,6 +189,7 @@ const Web3 = require("web3");
 const web3 = new Web3(process.env.VUE_APP_GETH_API);
 const miner = process.env.VUE_APP_MINER;
 const miner_password = process.env.VUE_APP_MINER_PASS;
+let g_answer_flag = true;
 
 
 export default {
@@ -201,7 +201,10 @@ export default {
         return {
             one_quesiton: {},
             any_answer: [],
-            answer_obj: {},
+            answer_obj: {
+                "user": this.$session.get('user_id'),
+                "answer_user_name": this.$session.get("user_name"),
+            },
             eth_password: "",
             dialog: false,
             valid: true,
@@ -218,6 +221,7 @@ export default {
     },
     async mounted() {
         await this.checkToken()
+        await this.checkGeth()
         await this.getOneQuestion()
         await this.getAnyAnswer()
         await this.addViewsQuestion()
@@ -228,12 +232,22 @@ export default {
             if (!this.$session.has("token")) {
                 router.push("/signin");
             }
-            now_user_id = this.$session.get('user_id');
-            now_user_name = this.$session.get('user_name');
+            user_id = this.$session.get('user_id');
+            user_name = this.$session.get('user_name');
             user_eth_address = this.$session.get('user_eth_address');
             user_group = this.$session.get('user_group');
-            user_point = this.$session.get('user_point');
-            UserClass = new User(now_user_id, axios);
+            UserClass = new User(user_id, axios);
+        },
+        checkGeth() {
+            web3.eth.personal.getAccounts().then(
+                (data) => {
+                    console.log("geth 起動中");
+                },
+                (err) => {
+                    console.log("geth 停止中", err);
+                    this.valid = false;
+                }
+            );
         },
         //質問取得
         getOneQuestion() {
@@ -259,7 +273,7 @@ export default {
                 });
             console.log('回答取得')
         },
-        //ベストアンサーがあるか確認 booleanを返す
+        //ベストアンサーがあるか確認 booleanをセットする イベント呼び出しされるfunc
         checkHasBestAnswer() {
             for (let item of this.any_answer) {
                 if (item.answer_best == true) {
@@ -282,43 +296,103 @@ export default {
         },
         //以下 イベント処理
 
-        //回答送信 回答が即時反映されない　point or ethの消費
+        //回答送信 回答が即時反映されない
         async postAnswer() {
             this.loading = true
-            //回答情報をまとめる
-            this.answer_obj["user"] = now_user_id
-            this.answer_obj["answer_user_name"] = now_user_name;
             this.answer_obj["question_id"] = question_id;
-            //回答する eth pointがない場合解凍できないようにする必要がある
-            await AnswerClass.postAnswer(this.answer_obj);
-            //new
-            //A ethの消費
-            await this.ethDown(user_eth_address,1,this.eth_password);
-            //A・B point消費
-            this.pointDown(now_user_id);
-            await QuestionClass.addNumberOfAnswers(question_id);
-            this.sendEmailQuestioner(this.answer_obj.answer_content);
+            //ethがあるか確認
+            this.getHasEth(user_eth_address,1);
+            //ethの消費
+            await this.ethDown(user_eth_address, 1, this.eth_password,g_answer_flag);
+            console.log('ethの消費',g_answer_flag)
+            //回答する
+            await AnswerClass.postAnswer(this.answer_obj,g_answer_flag);
+            console.log('回答投稿',g_answer_flag)
+            this.pointDown(user_id,g_answer_flag);
+            await QuestionClass.addNumberOfAnswers(question_id,g_answer_flag);
+            console.log('回答数増加',g_answer_flag);
+            this.sendEmailQuestioner(this.answer_obj.answer_content,g_answer_flag);
+            console.log('メール通知',g_answer_flag)
             //画面更新
             this.getAnyAnswer();
             this.dialog = false
             this.answer_obj = {}
             this.loading = false
         },
-        //質問したユーザーに対して，ポイントを送る[高評価を受けた場合] 未完成 questionclass
-        putSendPoint() {
-            axios
-                .put("/api/users/" + now_user_id + "/", update_obj)
-                .then((res) => {
-                    console.log(res);
+        //回答処理の中の関数
+        async getHasEth(address, check_ether) {
+            await web3.eth.getBalance(address)
+                .then((has_ether) => {
+                    console.log('所持eth', has_ether)
+                    g_answer_flag = (has_ether - check_ether > 0)
                 })
-                .catch((e) => {
-                    console.log(e);
-                });
         },
+        async ethDown(answer_user_eth_address, eth, answer_user_eth_password, flag) {
+            if (flag) {
+                const from = await web3.utils.toChecksumAddress(answer_user_eth_address);
+                const to = await web3.utils.toChecksumAddress(miner);
+                const transaction = {
+                    from: from,
+                    to: to,
+                    value: eth,
+                    gasPrice: 0,
+                };
+                await web3.eth.personal
+                    .unlockAccount(from, answer_user_eth_password, 15000)
+                    .then(() => {
+                        web3.eth.sendTransaction(transaction);
+                        console.log("回答によるethの消費");
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Error",
+                            text: "パスワードが正しくない可能性があります",
+                            showConfirmButton: false,
+                            showCloseButton: false,
+                            timer: 3000,
+                        });
+                        g_answer_flag = false;
+                    });
+            }
+        },
+        //回答の際point消費
+        pointDown(answer_user_id,flag) {
+            if (flag) {
+                axios
+                    .put("/api/point-down/" + answer_user_id + "/")
+                    .then(() => {
+                        console.log("point down");
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                    });
+            } 
+        },
+        //質問者に対して、回答通知メールを送る
+        sendEmailQuestioner(answer_content,flag) {
+            if(flag){
+                let _mail_obj = {
+                    subject: "質問に回答がありました",
+                    message: "[返信不可]" + answer_content,
+                    receipt_user_id: this.one_quesiton.user,
+                }
+                axios
+                    .post("/api/send-email/", _mail_obj)
+                    .then((res) => {
+                        console.log(res)
+                    })
+                    .catch((e) => {
+                        console.log(e)
+                    });
+            }
+        },
+
+        //いいね機能
         //質問のいいね機能 ok questionclass
         likeQuestion() {
             const question_like = {
-                user: now_user_id,
+                user: user_id,
                 question_id: this.one_quesiton.id,
             }
             axios
@@ -331,10 +405,117 @@ export default {
                     console.log(e);
                 });
         },
+        //回答のいいね機能 ok answerclass
+        likeAnswer(answer_index) {
+            //回答の評価値を1上げる 回答した人のetheridが必要
+            let answer_like_obj = {
+                user: user_id,
+                answer_id: this.any_answer[answer_index].id
+            }
+            axios
+                .post("/api/answer-like/", answer_like_obj)
+                .then((res) => {
+                    console.log(res);
+                    console.log('評価が変更されました')
+                    this.getAnyAnswer()
+                })
+                .catch((e) => {
+                    console.log(e);
+                });
+        },
+
+        //bestanswer機能
+        //bestanswer処理　answerclass ok
+        bestAnswer(answer) {
+            //bestアンサーがすでに存在している場合 ここが動いてない
+            if (this.checkHasBestAnswer()) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Error",
+                    text: "すでにベストアンサーは存在しています！",
+                    showConfirmButton: false,
+                    showCloseButton: false,
+                    timer: 3000,
+                });
+            }
+            //bestanswerがない場合
+            else {
+                //質問者のみベストアンサー決定可能
+                if (user_id == this.one_quesiton.user) {
+                    const answer_update_obj = {
+                        user: this.one_quesiton.user,
+                        question_id: question_id,
+                        answer_best: true
+                    }
+                    axios
+                        .put("/api/update-answer/" + answer.id + "/", answer_update_obj)
+                        .then(() => {
+                            best_answer = true;
+                            Swal.fire(
+                                'ベストアンサーを決定しました!',
+                                'success',
+                            )
+                            //ページの更新
+                            this.getAnyAnswer()
+                        })
+                        .catch((e) => {
+                            console.log(e);
+                        });
+                }
+                //質問者でないユーザーはできない
+                else {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Error",
+                        text: "質問者のみベストアンサーを決めることができます",
+                        showConfirmButton: false,
+                        showCloseButton: false,
+                        timer: 3000,
+                    });
+                }
+            }
+        },
+        //bestanswer解除処理 answerclass ok
+        releaseBestAnswer(answer) {
+            if (user_id == this.one_quesiton.user && !this.one_quesiton.question_status) {
+                const not_best_answer = {
+                    user: this.one_quesiton.user,
+                    question_id: question_id,
+                    answer_best: false
+                }
+                axios
+                    .put("/api/update-answer/" + answer.id + "/", not_best_answer)
+                    .then(() => {
+                        best_answer = false;
+                        Swal.fire(
+                            'ベストアンサーを解除しました!',
+                            'success',
+                        )
+                        //ページの更新
+                        this.getAnyAnswer()
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                    });
+            }
+            //質問者でないユーザーはできない
+            else {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Error",
+                    text: "質問者のみベストアンサーを解除できます.また解決済みの場合ベストアンサーは解除できません",
+                    showConfirmButton: false,
+                    showCloseButton: false,
+                    timer: 3000,
+                });
+            }
+        },
+
+        //解決機能
         //質問解決 questionclass ok
         resolvedQuestion() {
             //質問者の場合
-            if (now_user_id == this.one_quesiton.user) {
+            if (user_id == this.one_quesiton.user) {
                 //回答が存在する場合
                 if (this.any_answer.length != 0) {
                     //ベストアンサーが存在しているなら
@@ -395,7 +576,7 @@ export default {
         },
         //質問解決解除 questionclass ok
         releaseResolvedQuestion() {
-            if (now_user_id == this.one_quesiton.user) {
+            if (user_id == this.one_quesiton.user) {
                 const release_resolve_obj = {
                     user: this.one_quesiton.user,
                     question_status: false
@@ -424,131 +605,8 @@ export default {
                 });
             }
         },
-        //回答のいいね機能 ok answerclass
-        likeAnswer(answer_index) {
-            //回答の評価値を1上げる 回答した人のetheridが必要
-            let answer_like_obj = {
-                user: now_user_id,
-                answer_id: this.any_answer[answer_index].id
-            }
-            axios
-                .post("/api/answer-like/", answer_like_obj)
-                .then((res) => {
-                    console.log(res);
-                    console.log('評価が変更されました')
-                    this.getAnyAnswer()
-                })
-                .catch((e) => {
-                    console.log(e);
-                });
-        },
-        //bestanswerの二つの処理は一つにできる
-        //bestanswer処理　answerclass ok
-        bestAnswer(answer) {
-            //bestアンサーがすでに存在している場合 ここが動いてない
-            if (this.checkHasBestAnswer()) {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Error",
-                    text: "すでにベストアンサーは存在しています！",
-                    showConfirmButton: false,
-                    showCloseButton: false,
-                    timer: 3000,
-                });
-            }
-            //bestanswerがない場合
-            else {
-                //質問者のみベストアンサー決定可能
-                if (now_user_id == this.one_quesiton.user) {
-                    const answer_update_obj = {
-                        user: this.one_quesiton.user,
-                        question_id: question_id,
-                        answer_best: true
-                    }
-                    axios
-                        .put("/api/update-answer/" + answer.id + "/", answer_update_obj)
-                        .then(() => {
-                            best_answer = true;
-                            Swal.fire(
-                                'ベストアンサーを決定しました!',
-                                'success',
-                            )
-                            //ページの更新
-                            this.getAnyAnswer()
-                        })
-                        .catch((e) => {
-                            console.log(e);
-                        });
-                }
-                //質問者でないユーザーはできない
-                else {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Error",
-                        text: "質問者のみベストアンサーを決めることができます",
-                        showConfirmButton: false,
-                        showCloseButton: false,
-                        timer: 3000,
-                    });
-                }
-            }
-        },
-        //bestanswer解除処理 answerclass ok
-        releaseBestAnswer(answer) {
-            if (now_user_id == this.one_quesiton.user && !this.one_quesiton.question_status) {
-                const not_best_answer = {
-                    user: this.one_quesiton.user,
-                    question_id: question_id,
-                    answer_best: false
-                }
-                axios
-                    .put("/api/update-answer/" + answer.id + "/", not_best_answer)
-                    .then(() => {
-                        best_answer = false;
-                        Swal.fire(
-                            'ベストアンサーを解除しました!',
-                            'success',
-                        )
-                        //ページの更新
-                        this.getAnyAnswer()
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                    });
-            }
-            //質問者でないユーザーはできない
-            else {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Error",
-                    text: "質問者のみベストアンサーを解除できます.また解決済みの場合ベストアンサーは解除できません",
-                    showConfirmButton: false,
-                    showCloseButton: false,
-                    timer: 3000,
-                });
-            }
-        },
-        //質問者に対して、回答通知メールを送る ok
-        sendEmailQuestioner(answer_content) {
-            let _subject = "質問に回答がありました"
-            let _message = answer_content
-            let _user_id = this.one_quesiton.user
-            let _mail_obj = {
-                subject: _subject,
-                message: "[返信不可]" + _message,
-                receipt_user_id: _user_id,
-            }
-            axios
-                .post("/api/send-email/", _mail_obj)
-                .then((res) => {
-                    console.log(res)
-                })
-                .catch((e) => {
-                    console.log(e)
-                });
-        },
         //質問者回答者へ報酬を与える userclass?
-        async rewardEth(received_address,reward_eth) {
+        async rewardEth(received_address, reward_eth) {
             const from = await web3.utils.toChecksumAddress(miner);
             const to = await web3.utils.toChecksumAddress(received_address);
             const transaction = {
@@ -563,110 +621,34 @@ export default {
                     console.log("受け取り完了");
                 });
         },
-        //userclass? ok
-        async ethDown(question_user_eth_address, cost_eth, question_user_eth_password) {
-            //偶数 匿名 true かつ 仮想通貨足りているか
-            const can_question = await this.canQuestion();
-            if (user_group && can_question) {
-                const from = await web3.utils.toChecksumAddress(question_user_eth_address);
-                const to = await web3.utils.toChecksumAddress(miner);
-                const transaction = {
-                    from: from,
-                    to: to,
-                    value: cost_eth,
-                    gasPrice: 0,
-                };
-                await web3.eth.personal
-                    .unlockAccount(from, question_user_eth_password, 15000)
-                    .then(() => {
-                        web3.eth.sendTransaction(transaction);
-                        console.log("回答によるethの消費");
-                    })
-                    .catch(() => {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Error",
-                            text: "パスワードが正しくない可能性があります",
-                            showConfirmButton: false,
-                            showCloseButton: false,
-                            timer: 3000,
-                        });
-                    });
-            }
-        },
-        //ok ここeth pointまとめてよさそう
-        async canQuestion() {
-            const can_question = await this.getHasEth(user_eth_address, 1);
-            if (can_question <= 0) {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Error",
-                    text: "ETHが足りていません",
-                    showConfirmButton: false,
-                    showCloseButton: false,
-                    timer: 1000,
-                });
-                return false;
-            } else {
-                return true;
-            }
-        },
-        //ok
-        async getHasEth(address, check_ether) {
-            let has_ether = 0;
-            await web3.eth.getBalance(address)
-                .then((ether) => {
-                    has_ether = ether;
+        //質問したユーザーに対して，重要ではない
+        putSendPoint() {
+            axios
+                .put("/api/users/" + user_id + "/", update_obj)
+                .then((res) => {
+                    console.log(res);
                 })
-            return has_ether - check_ether;
-        },
-        //回答の際point消費 ok
-        pointDown(answer_user_id) {
-            if(this.checkHasPoint()){
-                axios
-                    .put("/api/point-down/" + answer_user_id + "/")
-                    .then(() => {
-                        console.log("point down");
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                    });
-            } else {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Error",
-                    text: "ポイントが足りていません",
-                    showConfirmButton: false,
-                    showCloseButton: false,
-                    timer: 1000,
+                .catch((e) => {
+                    console.log(e);
                 });
-            }
-            
-        },
-        //ok
-        checkHasPoint() {
-            if(user_point <= 0){
-                return false;
-            } else {
-                return true;
-            }
-        },
-        whiletest() {
-            let flag = true;
-            while(flag) {
-                flag = true;
-                console.log('first');
-                flag = false;
-                console.log('second');
-            }
         },
         log() {
-            this.whiletest();
-          //this.ethDown(user_eth_address,1,"testether2");
-          //this.rewardEth(user_eth_address,100);
-          //console.log(this.checkHasPoint());
-          //this.pointDown(now_user_id);
-        }
+        },
+        async initialEth(received_address, value) {
+            const from = await web3.utils.toChecksumAddress(miner);
+            const to = await web3.utils.toChecksumAddress(received_address);
+            const transaction = {
+                from: from,
+                to: to,
+                value: value,
+            };
+            await web3.eth.personal
+            .unlockAccount(from, miner_password, 15000)
+            .then(() => {
+                web3.eth.sendTransaction(transaction);
+                console.log("受け取り完了");
+            });
+        },
     },
 }
 </script>

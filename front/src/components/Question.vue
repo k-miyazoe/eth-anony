@@ -155,7 +155,6 @@ export default {
     async getHasEth(address, check_ether) {
       await web3.eth.getBalance(address)
         .then((has_ether) => {
-          //順番が良くない説
           console.log('所持eth', has_ether)
           g_question_flag = (has_ether -check_ether > 0)
         })
