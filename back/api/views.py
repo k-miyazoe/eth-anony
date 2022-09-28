@@ -100,15 +100,21 @@ class AnswerUpdate(generics.UpdateAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
 
-#ポイントUP機能
+#ポイントUP機能 requestが必要あるのか疑問
 @csrf_exempt
-def PointUp(request,pk):
-    User.objects.filter(pk=pk).update(user_point=F('user_point') + 1)
+def PointUp(request,user_id):
+    User.objects.filter(pk=user_id).update(user_point=F('user_point') + 1)
     result = {
             'result':"point up"
         }
     return JsonResponse(result)
-
+@csrf_exempt
+def PointDown(request,user_id):
+    User.objects.filter(pk=user_id).update(user_point=F('user_point') - 1)
+    result = {
+            'result':"point down"
+        }
+    return JsonResponse(result)
 #質問閲覧カウント
 @csrf_exempt
 def AddViews(request,pk):
