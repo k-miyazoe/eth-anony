@@ -6,7 +6,6 @@ import SignIn from '../views/SignIn.vue'
 import MyPage from '../views/MyPage.vue'
 import Question from '../components/Question.vue'
 import QuestionView from '../components/QuestionView.vue'
-//import MyPage from '../views/Mypage.vue'
 import NotFoundComponent from '../components/NotFoundComponent.vue'
 
 
@@ -14,42 +13,46 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
-    name: 'home',
-    component: HomeView
+    path: "/",
+    name: "home",
+    component: HomeView,
   },
   {
-    path: '/signup',
-    component: SignUp
+    path: "/signup",
+    component: SignUp,
   },
   {
-    path: '/signin',
-    component: SignIn
+    path: "/signin",
+    component: SignIn,
   },
   {
-    path: '/create-question',
-    component: Question
+    path: "/create-question",
+    component: Question,
   },
   //動的に質問閲覧ページを表示する必要がある
   {
-    path: '/question/:id',
+    path: "/question/:id",
     component: QuestionView,
     props: true,
-    name: "question-detail"
+    name: "question-detail",
   },
   {
-    path: '/mypage',
+    path: "/mypage",
     component: MyPage,
     props: true,
-    name: "mypage"
+    name: "mypage",
   },
   {
-    path: '*',
+    path: "*",
     component: NotFoundComponent,
-    name: 'notFound',
-  }
-
-]
+    name: "notFound",
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: { name: "home" },
+    meta: { isPublic: true },
+  },
+];
 
 const router = new VueRouter({
   mode: 'history',

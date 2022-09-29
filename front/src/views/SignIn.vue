@@ -8,9 +8,9 @@
             <v-card-title>
               <span class="headline">サインイン</span>
             </v-card-title>
-            <v-card-subtitle>
+            <!-- <v-card-subtitle>
               <span class="notes-text">学籍番号が偶数の方は実名アカウントで、奇数の方は匿名アカウントでサインインしてください</span></v-card-subtitle>
-            <v-spacer />
+            <v-spacer /> -->
 
             <v-card-text>
               <v-layout row fill-height justify-center align-center v-if="loading">
@@ -21,8 +21,8 @@
                 <v-container>
                   <v-text-field v-model="credentials.user_key" label="ユーザーID" :rules="rules.user_key" required />
 
-                  <v-text-field type="password" v-model="credentials.password" :counter="20" label="パスワード"
-                    :rules="rules.password" maxlength="20" required v-on:keydown.enter="signIn" />
+                  <v-text-field type="password" v-model="credentials.password" :counter="10" label="パスワード"
+                    :rules="rules.password" maxlength="10" required v-on:keydown.enter="signIn" />
                 </v-container>
                 <v-btn class="pink white--text" :disabled="!valid" @click="signIn">
                   サインイン

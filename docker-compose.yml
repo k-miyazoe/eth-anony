@@ -58,15 +58,15 @@ services:
   #     - 8025:8025
   #     - 1025:1025
   
-  geth:
-    tty: true
-    stdin_open: true
-    build:
-      context: .
-      dockerfile: ./Docker/Dockerfile.ubuntu
-    image: geth
-    container_name: geth
-    ports:
-      - 9090:9090
-    volumes:
-      - ./eth:/geth
+  # geth:
+  #   tty: true
+  #   stdin_open: true
+  #   build:
+  #     context: .
+  #     dockerfile: ./Docker/Dockerfile.ubuntu
+  #   image: geth
+  #   container_name: geth
+  #   ports:
+  #     - 9090:9090
+  #   volumes:
+  #     - ./eth:/geth

@@ -4,8 +4,8 @@
     <!-- <v-btn color="primary" @click="log">
       log button
     </v-btn> -->
-    <v-text>ユーザーIDとパスワードは重要なのでメモをお願いします</v-text>
-    <v-text>実名アカウントとは違うユーザーID,パスワードを登録してください</v-text>
+    <!-- <v-text>ユーザーIDとパスワードは重要なのでメモをお願いします</v-text>
+    <v-text>実名アカウントとは違うユーザーID,パスワードを登録してください</v-text> -->
     <v-container grid-list-md>
       <v-layout row wrap align-center justify-center fill-height>
         <v-flex xs12 sm8 lg4 md5>
