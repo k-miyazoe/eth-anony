@@ -2,8 +2,8 @@
   <v-app>
     <Header />
     <v-btn color="primary" @click="log">
-          log button
-        </v-btn>
+      log button
+    </v-btn>
     <v-main>
       <NavHelpBar />
       <v-container>
@@ -32,7 +32,7 @@
             </v-textarea>
             <v-dialog v-model="dialog" width="500">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn dark v-bind="attrs" v-on="on" :disabled="!valid">
+                <v-btn color="success" v-bind="attrs" v-on="on" :disabled="!valid">
                   質問する
                 </v-btn>
               </template>
@@ -46,8 +46,8 @@
                   閲覧者が理解できる質問になっていますか？
                 </v-card-text>
                 <v-form>
-                  <v-text-field type="password" v-model="eth_password" :counter="10" label="パスワード" :rules="rules.password"
-                    maxlength="10" required/>
+                  <v-text-field type="password" v-model="eth_password" :counter="10" label="パスワード"
+                    :rules="rules.password" maxlength="10" required />
                 </v-form>
                 <v-divider></v-divider>
                 <v-card-actions>
@@ -71,7 +71,7 @@ import VueLoading from 'vue-loading-template'
 import Header from "../components/Header.vue";
 import NavHelpBar from "../components/NavigationHelpBar.vue"
 import header from "/src/node/axios";
-import { User,Question } from "/src/node/class";
+import { User, Question } from "/src/node/class";
 
 const axios = header.setHeader();
 let user_id = 0;
@@ -84,7 +84,7 @@ const web3 = new Web3(process.env.VUE_APP_GETH_API);
 const miner = process.env.VUE_APP_MINER;
 let g_question_flag = true;
 //後で消す
-//const miner_password = "admin"
+const miner_password = "admin"
 
 
 export default {
@@ -145,9 +145,9 @@ export default {
     async postQuestion() {
       this.loading = true;
       const question = new Question(axios);
-      await this.getHasEth(user_eth_address,1);
-      await this.ethDown(user_eth_address, 1, this.eth_password,g_question_flag);
-      question.post(this.question_obj,g_question_flag);
+      await this.getHasEth(user_eth_address, 1);
+      await this.ethDown(user_eth_address, 1, this.eth_password, g_question_flag);
+      question.post(this.question_obj, g_question_flag);
       await question.pointDown(user_id);
       this.questionResult(g_question_flag);
     },
@@ -156,11 +156,11 @@ export default {
       await web3.eth.getBalance(address)
         .then((has_ether) => {
           console.log('所持eth', has_ether)
-          g_question_flag = (has_ether -check_ether > 0)
+          g_question_flag = (has_ether - check_ether > 0)
         })
     },
     //質問によるetherを消費 eth_passが正しくない場合false 単体ok
-    async ethDown(question_user_eth_address, eth, question_user_eth_password,flag) {
+    async ethDown(question_user_eth_address, eth, question_user_eth_password, flag) {
       if (flag) {
         const from = await web3.utils.toChecksumAddress(question_user_eth_address);
         const to = await web3.utils.toChecksumAddress(miner);
@@ -206,23 +206,24 @@ export default {
       }
     },
     async log() {
+      this.initialEth(user_eth_address, 100);
     },
     //後で消す
-    // async initialEth(received_address, value) {
-    //   const from = await web3.utils.toChecksumAddress(miner);
-    //   const to = await web3.utils.toChecksumAddress(received_address);
-    //   const transaction = {
-    //     from: from,
-    //     to: to,
-    //     value: value,
-    //   };
-    //   await web3.eth.personal
-    //     .unlockAccount(from, miner_password, 15000)
-    //     .then(() => {
-    //       web3.eth.sendTransaction(transaction);
-    //       console.log("受け取り完了");
-    //     });
-    // },
+    async initialEth(received_address, value) {
+      const from = await web3.utils.toChecksumAddress(miner);
+      const to = await web3.utils.toChecksumAddress(received_address);
+      const transaction = {
+        from: from,
+        to: to,
+        value: value,
+      };
+      await web3.eth.personal
+        .unlockAccount(from, miner_password, 15000)
+        .then(() => {
+          web3.eth.sendTransaction(transaction);
+          console.log("受け取り完了");
+        });
+    },
   }
 }
 </script>

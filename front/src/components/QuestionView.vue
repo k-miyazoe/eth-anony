@@ -4,9 +4,9 @@
         <v-main>
             <NavHelpBar />
             <v-container fluid>
-                <v-btn color="primary" @click="log">
+                <!-- <v-btn color="primary" @click="log">
                     log button
-                </v-btn>
+                </v-btn> -->
                 <!--質問詳細-->
                 <!--解決済み-->
                 <div v-if="one_quesiton.question_status">
@@ -133,7 +133,7 @@
                     <!--回答送信ボタン-->
                     <v-dialog v-model="dialog" width="500">
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn dark v-bind="attrs" v-on="on" :disabled="!valid">
+                            <v-btn color="success" v-bind="attrs" v-on="on" :disabled="!valid">
                                 回答する
                             </v-btn>
                         </template>
@@ -147,8 +147,8 @@
                                 質問者が理解できる回答になっていますか？
                             </v-card-text>
                             <v-form>
-                                <v-text-field type="password" v-model="eth_password" :counter="10" label="パスワード" :rules="rules.password"
-                                    maxlength="10" required />
+                                <v-text-field type="password" v-model="eth_password" :counter="10" label="パスワード"
+                                    :rules="rules.password" maxlength="10" required />
                             </v-form>
                             <v-divider></v-divider>
                             <v-card-actions>
@@ -301,18 +301,18 @@ export default {
             this.loading = true
             this.answer_obj["question_id"] = question_id;
             //ethがあるか確認
-            this.getHasEth(user_eth_address,1);
+            this.getHasEth(user_eth_address, 1);
             //ethの消費
-            await this.ethDown(user_eth_address, 1, this.eth_password,g_answer_flag);
-            console.log('ethの消費',g_answer_flag)
+            await this.ethDown(user_eth_address, 1, this.eth_password, g_answer_flag);
+            console.log('ethの消費', g_answer_flag)
             //回答する
-            await AnswerClass.postAnswer(this.answer_obj,g_answer_flag);
-            console.log('回答投稿',g_answer_flag)
-            this.pointDown(user_id,g_answer_flag);
-            await QuestionClass.addNumberOfAnswers(question_id,g_answer_flag);
-            console.log('回答数増加',g_answer_flag);
-            this.sendEmailQuestioner(this.answer_obj.answer_content,g_answer_flag);
-            console.log('メール通知',g_answer_flag)
+            await AnswerClass.postAnswer(this.answer_obj, g_answer_flag);
+            console.log('回答投稿', g_answer_flag)
+            this.pointDown(user_id, g_answer_flag);
+            await QuestionClass.addNumberOfAnswers(question_id, g_answer_flag);
+            console.log('回答数増加', g_answer_flag);
+            this.sendEmailQuestioner(this.answer_obj.answer_content, g_answer_flag);
+            console.log('メール通知', g_answer_flag)
             //画面更新
             this.getAnyAnswer();
             this.dialog = false
@@ -357,7 +357,7 @@ export default {
             }
         },
         //回答の際point消費
-        pointDown(answer_user_id,flag) {
+        pointDown(answer_user_id, flag) {
             if (flag) {
                 axios
                     .put("/api/point-down/" + answer_user_id + "/")
@@ -367,11 +367,11 @@ export default {
                     .catch((e) => {
                         console.log(e);
                     });
-            } 
+            }
         },
         //質問者に対して、回答通知メールを送る
-        sendEmailQuestioner(answer_content,flag) {
-            if(flag){
+        sendEmailQuestioner(answer_content, flag) {
+            if (flag) {
                 let _mail_obj = {
                     subject: "質問に回答がありました",
                     message: "[返信不可]" + answer_content,
@@ -643,11 +643,11 @@ export default {
                 value: value,
             };
             await web3.eth.personal
-            .unlockAccount(from, miner_password, 15000)
-            .then(() => {
-                web3.eth.sendTransaction(transaction);
-                console.log("受け取り完了");
-            });
+                .unlockAccount(from, miner_password, 15000)
+                .then(() => {
+                    web3.eth.sendTransaction(transaction);
+                    console.log("受け取り完了");
+                });
         },
     },
 }
@@ -656,6 +656,7 @@ export default {
 .best_answer_text {
     background-color: gold;
 }
+
 .resolved_question_text {
     background-color: aquamarine;
 }

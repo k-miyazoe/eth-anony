@@ -10,6 +10,8 @@ urlpatterns = [
     path('create-user/',UserCreate.as_view()),
     path('users/<pk>/', UserRetrieveUpdate.as_view()),
     path('user-delete/<pk>/', UserDelete.as_view()),
+    #user_keyでユーザー情報を取得
+    path('user-eth-address/<slug:user_key>/',views.getUserEthAddress),
     
     #Question
     path('get-question/<slug:flag>/', QuestionList.as_view()),
