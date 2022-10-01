@@ -15,6 +15,8 @@ services:
       - ./front:/app/
     env_file:
       - ./env_files/front.env
+    expose:
+      - 3000
 
   backend:
     tty: true
@@ -31,6 +33,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    expose:
+      - 4000
 
   mysql:
     build:
@@ -51,22 +55,13 @@ services:
     env_file:
       - ./env_files/db.env
 
-  # mailhogserver:
-  #   image: mailhog/mailhog:latest
-  #   container_name: mailhog
-  #   ports:
-  #     - 8025:8025
-  #     - 1025:1025
-  
-  # geth:
-  #   tty: true
-  #   stdin_open: true
-  #   build:
-  #     context: .
-  #     dockerfile: ./Docker/Dockerfile.ubuntu
-  #   image: geth
-  #   container_name: geth
-  #   ports:
-  #     - 9090:9090
-  #   volumes:
-  #     - ./eth:/geth
+  nginx:
+    build:
+      context: ./
+      dockerfile: ./Docker/Dockerfile.nginx
+    image: eth-anony-nginx
+    container_name: eth-anony-nginx
+    ports:
+      - 8040:80
+    volumes:
+      - ./front/dist/:/var/www/
