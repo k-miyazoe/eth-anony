@@ -83,7 +83,10 @@ EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')
 CROS_ORIGIN_ALLOW_ALL = env.bool('CROS_ORIGIN_ALLOW_ALL')
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:8080',
+    'http://localhost:8040',
+    'http://127.0.0.1:8040',
     'http://133.49.24.149:8080',
+    'http://133.49.24.149:8040',
 ]
 
 # レスポンスを公開する
@@ -113,7 +116,6 @@ DATABASES = {
     'default': env.db(),
 }
 
-#ここが少し不安 api.Userになるかも[8/28 20:00]
 AUTH_USER_MODEL = 'api.User'
 
 AUTH_PASSWORD_VALIDATORS = [
