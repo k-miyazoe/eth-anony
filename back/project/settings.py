@@ -15,7 +15,8 @@ SECRET_KEY = env('Django_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOW_HOSTS')
+# ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+ALLOWED_HOSTS = ['133.49.24.149','localhost','127.0.0.1']
 
 
 # Application definition
