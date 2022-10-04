@@ -1,9 +1,9 @@
 <template>
   <v-app>
     <Header />
-    <v-btn color="primary" @click="log">
+    <!-- <v-btn color="primary" @click="log">
       log button
-    </v-btn>
+    </v-btn> -->
     <v-main>
       <NavHelpBar />
       <v-container>
@@ -151,7 +151,6 @@ export default {
       await question.pointDown(user_id);
       this.questionResult(g_question_flag);
     },
-    //
     async getHasEth(address, check_ether) {
       await web3.eth.getBalance(address)
         .then((has_ether) => {
@@ -206,23 +205,6 @@ export default {
       }
     },
     async log() {
-      this.initialEth(user_eth_address, 100);
-    },
-    //後で消す
-    async initialEth(received_address, value) {
-      const from = await web3.utils.toChecksumAddress(miner);
-      const to = await web3.utils.toChecksumAddress(received_address);
-      const transaction = {
-        from: from,
-        to: to,
-        value: value,
-      };
-      await web3.eth.personal
-        .unlockAccount(from, miner_password, 15000)
-        .then(() => {
-          web3.eth.sendTransaction(transaction);
-          console.log("受け取り完了");
-        });
     },
   }
 }

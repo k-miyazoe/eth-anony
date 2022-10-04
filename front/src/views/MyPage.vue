@@ -15,6 +15,7 @@
                     <v-card-text>
                         <!--変更する-->
                         所持: {{ user_has_eth }} point
+                        *所持ポイントの反映には時差がある時があります
                     </v-card-text>
                     <v-card-text>
                         メールアドレス: {{ user_info.user_email }}
@@ -33,9 +34,9 @@
                                     label="送り先のユーザーID" required></v-text-field>
                                 <v-text-field v-model.number="send_eth" :rules="rules.eth" label="ETH" required>
                                 </v-text-field>
-                                <v-text-field v-model="my_eth_password" :rules="rules.password" label="Password"
+                                <v-text-field v-model="my_eth_password" :rules="rules.password" label="現在サインインしているパスワード"
                                     required></v-text-field>
-                                <v-btn :disabled="!valid" color="success" class="mr-4" @click="sendEth()">
+                                <v-btn :disabled="!valid" color="success" class="mr-4" @click="moveEth()">
                                     送金
                                 </v-btn>
                             </v-form>
@@ -49,6 +50,7 @@
 
 <script>
 import router from "../router";
+import Swal from "sweetalert2";
 import Header from "../components/Header.vue";
 import NavHelpBar from "../components/NavigationHelpBar.vue"
 import header from "/src/node/axios";
@@ -56,9 +58,8 @@ import header from "/src/node/axios";
 const axios = header.setHeader();
 const Web3 = require("web3");
 const web3 = new Web3(process.env.VUE_APP_GETH_API);
+let user_id = "";
 let user_eth_address = "";
-let g_send_flag = true;
-
 
 export default {
     components: {
@@ -66,12 +67,12 @@ export default {
     },
     data: () => ({
         valid: true,
-        uid: "",
         user_id: null,
         user_info: {},
         user_has_eth: 0,
+        //受け取る側のethアドレス
         forward_address: "",
-        send_eth: 0,
+        send_eth: 10,
         my_eth_password: "",
         rules: {
             address: [
@@ -92,21 +93,19 @@ export default {
         this.checkToken();
         this.getUserInfo();
         this.checkGeth();
-        this.getHasEth();
-        //後で消す
-        //this.log();
+        this.getHasEthAndBackup();
     },
     methods: {
         checkToken() {
-            this.$session.start();
             if (!this.$session.has("token")) {
                 router.push("/signin");
             }
+            user_id = this.$session.get('user_id')
             user_eth_address = this.$session.get('user_eth_address');
         },
         checkGeth() {
             web3.eth.personal.getAccounts().then(
-                (data) => {
+                () => {
                     console.log("geth 起動中");
                 },
                 (err) => {
@@ -122,50 +121,108 @@ export default {
                 .get("/api/users/" + user_id)
                 .then((res) => {
                     this.user_info = res.data;
-                    //console.log(this.user_info)
                 })
                 .catch((e) => {
                     console.log(e);
                 });
         },
-        //所持ethを取得
-        async getHasEth() {
+        //所持ethを取得　+ バックアップ
+        async getHasEthAndBackup() {
             await web3.eth.getBalance(user_eth_address)
                 .then((ether) => {
+                    //eth所持量を一時保存して,ethを移動する際に比較する変数
                     this.user_has_eth = ether;
-                    console.log('所持eth', ether)
+                    //バックアップ
+                    this.saveEthDataToDB(ether);
+                    console.log('バックアップ成功')
                 })
+                .catch(() => {
+                    console.log('eth情報の取得に失敗')
+                })
+
         },
+        //eth情報をdbへ更新
+        async saveEthDataToDB(has_eth) {
+            const user_point_data = {
+                "user_point": has_eth,
+            }
+            axios
+                .put("/api/users/" + user_id, user_point_data)
+                .then(() => {
+                    console.log('所持ethをdbへバックアップ');
+                })
+                .catch(() => {
+                    console.log("バックアップに失敗しました");
+                });
+        },
+
         //イベント処理
-        async getReceiveAddress() {
-            //送るアドレスを取得しないといけない
-            //userIdからeth_addressを取得
+        //送り先のethアドレスを取得し,ethを移動する
+        async getReceiveAddressAndSendEth(forward_user_id) {
+            axios
+                .get("/api/user-eth-address/" + forward_user_id)
+                .then((res) => {
+                    //1 受け取り先のethアドレスを取得
+                    let forward_address = res.data;
+                    //2 ethの移動
+                    this.sendEth(user_eth_address, forward_address, this.send_eth, this.my_eth_password);
+                })
+                .catch((e) => {
+                    console.log(e);
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Error",
+                        text: "送り先が見つかりませんでした!",
+                        showConfirmButton: false,
+                        showCloseButton: false,
+                        timer: 3000,
+                    });
+                });
         },
         //送る上限設定 瞬間ごとの判定なる
         limitSetting() {
             return (this.user_has_eth >= this.send_eth)
         },
-        async sendEth() {
-            //実名と匿名(個人のeth間での送り合い)
-            g_send_flag = this.limitSetting();
-            //received_addressを取得
-            if (g_send_flag) {
-                const from = await web3.utils.toChecksumAddress(user_eth_address);
-                const to = await web3.utils.toChecksumAddress(received_address);
-                const transaction = {
-                    from: from,
-                    to: to,
-                    value: this.send_eth,
-                    gasPrice: 0,
-                };
-                await web3.eth.personal
-                    .unlockAccount(from, this.my_eth_password, 15000)
-                    .then(() => {
-                        web3.eth.sendTransaction(transaction);
-                        console.log("仮想通貨送金完了");
+        async sendEth(from_eth_address, to_eth_address, value, from_eth_pass) {
+            const from = await web3.utils.toChecksumAddress(from_eth_address);
+            const to = await web3.utils.toChecksumAddress(to_eth_address);
+            const transaction = {
+                from: from,
+                to: to,
+                value: value,
+                gasPrice: 0,
+            };
+            await web3.eth.personal
+                .unlockAccount(from, from_eth_pass, 15000)
+                .then(() => {
+                    web3.eth.sendTransaction(transaction);
+                    Swal.fire("仮想通貨が送金できました", "success");
+                })
+                .catch((e) => {
+                    console.log(e);
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Error",
+                        text: "仮想通貨は送れませんでした",
+                        showConfirmButton: false,
+                        showCloseButton: false,
+                        timer: 3000,
                     });
-
-            } else {
+                    return
+                });
+        },
+        //個人のethの移動
+        async moveEth() {
+            let flag = this.limitSetting();
+            //送金できる場合
+            if (flag && this.forward_address && this.my_eth_password) {
+                //送り先のethアドレスを取得 + ethを移動
+                await this.getReceiveAddressAndSendEth(this.forward_address);
+                //手持ちのeth情報更新 + dbへバックアップ
+                this.getHasEthAndBackup();
+            }
+            //送金できない場合
+            else {
                 Swal.fire({
                     icon: "warning",
                     title: "Error",
@@ -174,9 +231,10 @@ export default {
                     showCloseButton: false,
                     timer: 3000,
                 });
+                return
             }
         },
-        log() {
+        async log() {
         }
     },
 }

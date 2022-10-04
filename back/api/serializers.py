@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__' 
         #idを更新不可にできる
         read_only_fields = ('id',)
-        extra_kwargs = {'password': {'required': True}}
+        extra_kwargs = {'password': {'required': False}}
 
     def create(self,validated_data):
         #パスワードをハッシュ化する
