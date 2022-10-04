@@ -21,14 +21,15 @@
 
               <v-form v-else ref="form" v-model="valid" lazy-validation>
                 <v-container>
-                  <v-text-field v-model="main_account.user_key" label="ユーザーID*(半角英数)" :rules="rules.user_key" required />
-                  <v-text-field type="password" v-model="main_account.password" :counter="10" label="パスワード*(半角英数)" :rules="rules.password"
-                    maxlength="10" required />
+                  <v-text-field v-model="main_account.user_key" label="ユーザーID*(半角英数)" :rules="rules.user_key"
+                    required />
+                  <v-text-field type="password" v-model="main_account.password" :counter="10" label="パスワード*(半角英数)"
+                    :rules="rules.password" maxlength="10" required />
                   <!--確認用passoword-->
-                  <v-text-field type="password" v-model="check_password_main" :counter="20" label="パスワード(確認用)*" :rules="rules.password"
-                    maxlength="10" required />
+                  <v-text-field type="password" v-model="check_password_main" :counter="10" label="パスワード(確認用)*"
+                    :rules="rules.password" maxlength="10" required />
                   <v-text-field v-model="main_account.user_email" label="学籍番号メールアドレス*" :rules="rules.email" required />
-                  
+
                   <v-text-field v-model="main_account.user_name" label="氏名*" :rules="rules.user_name" required />
                 </v-container>
               </v-form>
@@ -45,16 +46,16 @@
               <v-layout row fill-height justify-center align-center v-if="loading">
                 <v-progress-circular :size="50" color="primary" indeterminate />
               </v-layout>
-          
+
               <v-form v-else ref="form" v-model="valid" lazy-validation>
                 <v-container>
                   <v-text-field v-model="sub_account.user_key" label="ユーザーID*(半角英数)" :rules="rules.user_key" required />
                   <v-text-field type="password" v-model="sub_account.password" :counter="10" label="パスワード*(半角英数)"
                     :rules="rules.password" maxlength="10" required />
                   <!--確認用passoword-->
-                  <v-text-field type="password" v-model="check_password_sub" :counter="10" label="パスワード(確認用)*" :rules="rules.password"
-                    maxlength="10" required />
-                  <v-text-field v-model="sub_account.email" label="学籍番号メールアドレス(任意)"/>
+                  <v-text-field type="password" v-model="check_password_sub" :counter="10" label="パスワード(確認用)*"
+                    :rules="rules.password" maxlength="10" required />
+                  <v-text-field v-model="sub_account.email" label="学籍番号メールアドレス(任意)" />
                 </v-container>
               </v-form>
             </v-card-text>
@@ -108,7 +109,7 @@ export default {
       password: [
         (v) => !!v || "パスワードは必須です",
         (v) =>
-          (v && v.length > 7) || "パスワードは8文字以上でなければなりません",
+          (v && v.length > 5) || "パスワードは6文字以上でなければなりません",
       ],
       user_name: [
         (v) => !!v || "名前は必須です",
@@ -144,21 +145,21 @@ export default {
       flag = this.checkForm();
       flag = this.checkUserId(flag);
       //正しいpasswordの入力か確認
-      flag = this.checkPassword(this.main_account.password,this.check_password_main,flag);
-      flag = this.checkPassword(this.sub_account.password,this.check_password_sub,flag);
+      flag = this.checkPassword(this.main_account.password, this.check_password_main, flag);
+      flag = this.checkPassword(this.sub_account.password, this.check_password_sub, flag);
       //mainとsubのパスワードが一致してないか確認する関数
       flag = this.checkMainSubPassword(this.main_account.password, this.sub_account.password);
-      await this.createEthAccount(this.main_account.password, flag,"main");
-      await this.createEthAccount(this.sub_account.password, flag,"sub");
-      flag = this.checkEthAddressType(g_main_eth_address,g_sub_eth_address);
-      console.log('check eth address typeのflag確認',flag)
+      await this.createEthAccount(this.main_account.password, flag, "main");
+      await this.createEthAccount(this.sub_account.password, flag, "sub");
+      flag = this.checkEthAddressType(g_main_eth_address, g_sub_eth_address);
+      console.log('check eth address typeのflag確認', flag)
 
-      await this.createAccount(this.main_account,100,flag,g_main_eth_address);
+      await this.createAccount(this.main_account, 100, flag, g_main_eth_address);
       //flagがundefinedになる　-> subが作成されなくなる
       console.log("5 createAccount main", flag);
-      await this.createAccount(this.sub_account,0,flag,g_sub_eth_address);
+      await this.createAccount(this.sub_account, 0, flag, g_sub_eth_address);
       console.log("6 createAccount sub", flag);
-      await this.initialEth(g_main_eth_address,100,flag);
+      await this.initialEth(g_main_eth_address, 100, flag);
       console.log("7 initialEth", flag);
       this.loading = false;
       this.signUpResult(flag);
@@ -169,7 +170,7 @@ export default {
     },
     //実名と匿名のuserkeyの確認 うまく行ってない 
     checkUserId(flag) {
-      if(flag){
+      if (flag) {
         if (this.main_account.user_key == this.sub_account.user_key) {
           Swal.fire({
             icon: "warning",
@@ -187,17 +188,17 @@ export default {
         console.log('userkey checkなし')
         return false;
       }
-      
+
     },
     //ok
     checkPassword(pass1, pass2, flag) {
-      if(!flag){
+      if (!flag) {
         console.log('パスワードチェックなし')
         return false;
       }
       else if (pass1 == pass2) {
         return true;
-      } 
+      }
       else {
         Swal.fire({
           icon: "warning",
@@ -209,7 +210,7 @@ export default {
         });
         this.loading = false;
         this.main_account.password = ""
-        this.sub_account.password =""
+        this.sub_account.password = ""
         this.check_password = ""
         return false;
       }
@@ -232,15 +233,15 @@ export default {
       }
     },
     //ethアカウント作成  処理に5秒程度時間がかかる ok
-    async createEthAccount(password,flag,account_type) {
-      if(!flag){
+    async createEthAccount(password, flag, account_type) {
+      if (!flag) {
         console.log('ethアカウント生成しない')
         return false;
       }
       await web3.eth.personal.newAccount(password).then(
         (data) => {
-          if(account_type == "main"){
-            console.log("ethアカウント作成ok[main]", data,"ethアドレスの型",typeof(data));
+          if (account_type == "main") {
+            console.log("ethアカウント作成ok[main]", data, "ethアドレスの型", typeof (data));
             g_main_eth_address = data;
           } else {
             console.log("ethアカウント作成ok[sub]", data, "ethアドレスの型", typeof (data));
@@ -249,8 +250,8 @@ export default {
           return true;
         },
         (err) => {
-            console.log("error", err);
-            return false;
+          console.log("error", err);
+          return false;
         }
       );
     },
@@ -277,8 +278,8 @@ export default {
       }
     },
     //mainとsubを作成する(2回呼び出される)
-    async createAccount(account,point,flag,eth_address){
-      if(!flag){
+    async createAccount(account, point, flag, eth_address) {
+      if (!flag) {
         console.log('アカウント生成しない')
         Swal.fire({
           icon: "warning",
@@ -296,7 +297,7 @@ export default {
       account.user_eth_password = account.password;
       account.user_point = point;
       account.user_eth_address = eth_address;
-      console.log("createAccount:",account)
+      console.log("createAccount:", account)
       await axios
         .post("/api/create-user/", account)
         .then(() => {

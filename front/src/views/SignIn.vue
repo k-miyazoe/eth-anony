@@ -40,12 +40,12 @@
 </template>
 
 <script>
-import axios from "axios";
 import Swal from "sweetalert2";
 import router from "../router";
 import Header from "../components/Header.vue";
+import header from "/src/node/axios";
 
-const api_url = process.env.VUE_APP_API_URL;
+const axios = header.setHeader();
 
 export default {
   components: {
@@ -62,7 +62,7 @@ export default {
       password: [
         (v) => !!v || "パスワードは必須です",
         (v) =>
-          (v && v.length > 7) || "パスワードは8文字以上でなければなりません",
+          (v && v.length > 5) || "パスワードは6文字以上でなければなりません",
       ],
     },
     axios: {},
@@ -72,11 +72,17 @@ export default {
     this.checkToken();
   },
   methods: {
+    checkToken() {
+      if (this.$session.has("token")) {
+        router.push("/");
+      }
+    },
+    //イベント処理
     signIn() {
       if (this.$refs.form.validate()) {
         this.loading = true;
         axios
-          .post(api_url + "/auth/", this.credentials)
+          .post("/auth/", this.credentials)
           .then((res) => {
             //ながすぎるので関数にあとでまとめる
             this.$session.start();
@@ -84,7 +90,7 @@ export default {
             this.$session.set("user_id", res.data.user_id);
             this.$session.set("user_name", res.data.user_name);
             this.$session.set("user_eth_address", res.data.user_eth_address);
-            this.$session.set("user_group" ,res.data.user_group);
+            this.$session.set("user_group", res.data.user_group);
             this.loading = false;
             router.push("/");
           })
@@ -101,12 +107,6 @@ export default {
             });
             this.credentials.password = ""
           });
-      }
-    },
-    checkToken() {
-      this.$session.start();
-      if (this.$session.has("token")) {
-        router.push("/");
       }
     },
   },

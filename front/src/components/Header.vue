@@ -43,7 +43,6 @@ export default {
   methods: {
     setURLParameter() {
       if (this.$session.has("token")) {
-        console.log('Header.vue set uid', this.$session.get('user_id'))
         this.uid = this.$session.get('user_id')
         this.login_status = true;
       }

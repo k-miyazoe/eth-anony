@@ -101,10 +101,10 @@ class AnswerUpdate(generics.UpdateAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
 
+#ok
 def getUserEthAddress(request,user_key):
-    #特定の情報だけ欲しい　できれば
-    user_eth_address = User.objects.get(user_key=user_key)
-    return JsonResponse(user_eth_address)
+    user = User.objects.get(user_key=user_key)
+    return JsonResponse(user.user_eth_address,safe=False)
     
 #ポイントUP機能 requestが必要あるのか疑問
 @csrf_exempt
