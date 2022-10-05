@@ -1,5 +1,10 @@
 FROM python:3.8
 
+#pycファイルを生成しない
+ENV PYTHONDONTWRITEBYTECODE 1
+#バッファリングを行わない
+ENV PYTHONUNBUFFERED 1
+
 WORKDIR /run
 
 COPY ./back/requirements.txt /run
