@@ -5,6 +5,7 @@ function setHeader() {
   const csrftoken = Cookies.get("csrftoken");
   const axios = Axios.create({
     baseURL: process.env.VUE_APP_API_URL,
+    //baseURL: "http://eth-anony-back:9990",
     timeout: 2500,
     headers: {
       "Content-Type": "application/json",
