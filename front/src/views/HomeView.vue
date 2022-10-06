@@ -24,9 +24,9 @@
 
 <script>
 import Header from "../components/Header.vue";
-import axios from "axios";
+import header from "/src/node/axios";
+const axios = header.setHeader();
 
-const api_url = process.env.VUE_APP_API_URL;
 export default {
   components: {
     Header,
@@ -41,13 +41,13 @@ export default {
     }
   },
   mounted() {
-    this.getUnresolvedQuestion()
+    this.getUnresolvedQuestion();
   },
   methods: {
     //3つのゲット関数は引数に文字列を与えてやれば、一つの関数で済む
     getUnresolvedQuestion() {
       axios
-        .get(api_url + "/api/get-question/unresolved/")
+        .get("/api/get-question/unresolved/")
         .then((res) => {
           this.unresolved_question = res.data;
         })
@@ -57,7 +57,7 @@ export default {
     },
     getResolvedQuestion() {
       axios
-        .get(api_url + "/api/get-question/resolved/")
+        .get("/api/get-question/resolved/")
         .then((res) => {
           console.log(res.data);
           this.resolved_question = res.data
@@ -70,7 +70,7 @@ export default {
     //未完成
     getMyQuestion() {
       axios
-        .get(api_url + "/api/get-question/")
+        .get("/api/get-question/")
         .then((res) => {
           console.log(res.data);
           //res.dateを保持する
