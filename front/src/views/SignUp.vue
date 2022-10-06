@@ -86,8 +86,6 @@ const miner_password = process.env.VUE_APP_MINER_PASS;
 let g_main_eth_address = "";
 let g_sub_eth_address = "";
 
-
-
 export default {
   components: {
     Header,
