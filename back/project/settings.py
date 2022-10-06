@@ -16,7 +16,7 @@ SECRET_KEY = env('Django_SECRET_KEY')
 DEBUG = env.bool('DEBUG')
 
 # ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
-ALLOWED_HOSTS = ['133.49.24.114','eagle4.fu.is.saga-u.ac.jp','localhost','127.0.0.1','backend']
+ALLOWED_HOSTS = ['133.49.24.114','eagle4.fu.is.saga-u.ac.jp','localhost','127.0.0.1']
 
 
 # Application definition
