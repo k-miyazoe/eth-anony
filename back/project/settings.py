@@ -1,7 +1,5 @@
 from pathlib import Path
-import datetime # 追加
-import pymysql
-import environ
+import datetime,pymysql,environ
 
 env = environ.Env()
 env.read_env('back.env')
