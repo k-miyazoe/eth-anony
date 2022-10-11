@@ -28,15 +28,13 @@ services:
       dockerfile: ./Docker/Dockerfile.back
     image: eth-anony-back
     container_name: eth-anony-back
-    ports:
-      - 9990:9990
     volumes:
       - ./back:/run/
     depends_on:
       mysql:
         condition: service_healthy
     expose:
-      - 4000
+      - 8001
     networks:
       - app_net
 
@@ -68,11 +66,12 @@ services:
       - 8040:80
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/uwsgi_params:/etc/nginx/uwsgi_params #add
+      - ./front:/frontend #add
       - ./front/dist/:/var/www/html
     restart: always
     depends_on:
       - backend
-    command: nginx -t
     networks:
       - app_net
 
