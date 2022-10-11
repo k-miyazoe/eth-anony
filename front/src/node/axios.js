@@ -4,15 +4,13 @@ import Cookies from "js-cookie";
 function setHeader() {
   const csrftoken = Cookies.get("csrftoken");
   const axios = Axios.create({
-    //baseURL: process.env.VUE_APP_API_URL,
-    //おそらくここがeagle4.cc.xxx/question-board-saga/になる
-    baseURL: "http://localhost:8040",
-    //baseURL: "http://eth-anony-back:9990",
+    baseURL: process.env.VUE_APP_API_URL,
+    //baseURL: "http://localhost:8040",
     timeout: 2500,
     headers: {
       "Content-Type": "application/json",
-      //Authorization: jwt,
       "X-CSRFToken": csrftoken,
+      //Authorization: jwt,
     },
   });
   return axios;
