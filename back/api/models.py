@@ -1,3 +1,4 @@
+from statistics import mode
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
@@ -68,6 +69,11 @@ class Question(models.Model):
     question_number_of_responses = models.IntegerField(default=0)
     #閲覧回数[new]
     question_views = models.IntegerField(default=0)
+    #bad評価
+    question_bad_value = models.IntegerField(default=0)
+    #追加
+    question_group = models.BooleanField(null=True)
+    question_eth_address = models.CharField(default="",max_length=50)
     
     
     class Meta:
@@ -82,6 +88,10 @@ class Answer(models.Model):
     answer_post_time = models.DateTimeField(auto_now_add=True)
     answer_value = models.IntegerField(default=0)
     answer_best = models.BooleanField(default=False)
+    #bad評価
+    answer_bad_value = models.IntegerField(default=0)
+    #追加
+    answer_eth_address = models.CharField(default="",max_length=50)
 
 #質問いいね
 class QuestionLike(models.Model):
@@ -90,6 +100,17 @@ class QuestionLike(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
 #回答いいね
 class AnswerLike(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+#質問bad
+class QuestionBad(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+#回答bad
+class AnswerBad(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)

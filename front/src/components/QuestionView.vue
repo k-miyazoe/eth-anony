@@ -4,9 +4,9 @@
         <v-main>
             <NavHelpBar />
             <v-container fluid>
-                <!-- <v-btn color="primary" @click="log">
+                <v-btn color="primary" @click="log">
                     log button
-                </v-btn> -->
+                </v-btn>
                 <!--質問詳細-->
                 <!--解決済み-->
                 <div v-if="one_quesiton.question_status">
@@ -34,9 +34,9 @@
                                     {{ one_quesiton.question_value }}
                                 </v-btn>
                                 <!--解決を解除-->
-                                <v-btn color="green" text @click="releaseResolvedQuestion">
+                                <!-- <v-btn color="green" text @click="releaseResolvedQuestion">
                                     解決取り消し
-                                </v-btn>
+                                </v-btn> -->
                             </v-card-actions>
                         </v-col>
                     </v-card>
@@ -62,12 +62,17 @@
 
                             <v-card-actions>
                                 <!--高評価-->
-                                <v-btn color="orange" text @click="likeQuestion">
+                                <v-btn color="green" text @click="likeQuestion">
                                     <v-icon>mdi-thumb-up</v-icon>
                                     {{ one_quesiton.question_value }}
                                 </v-btn>
+                                <!--低評価-->
+                                <v-btn color="orange" text @click="BadQuestion">
+                                    <v-icon>mdi-thumb-down</v-icon>
+                                    <!-- {{ one_quesiton.question_bad_value }} -->
+                                </v-btn>
                                 <!--解決-->
-                                <v-btn color="green" text @click="resolvedQuestion">
+                                <v-btn color="green" text @click="resolvedQuestion" :disabled="!valid">
                                     解決
                                 </v-btn>
                             </v-card-actions>
@@ -87,10 +92,15 @@
                         <v-card-text>{{ item.answer_content }}</v-card-text>
                         <v-card-text>{{ item.answer_source_code }}</v-card-text>
                         <v-card-actions>
-                            <!--いいねボタン-->
-                            <v-btn color="orange" text @click="likeAnswer(index)">
+                            <!--高評価-->
+                            <v-btn color="green" text @click="likeAnswer(index)">
                                 <v-icon>mdi-thumb-up</v-icon>
                                 {{ item.answer_value }}
+                            </v-btn>
+                            <!--低評価-->
+                            <v-btn color="orange" text @click="BadAnswer(index)">
+                                <v-icon>mdi-thumb-down</v-icon>
+                                <!-- {{ item.answer_bad_value }} -->
                             </v-btn>
                             <!--ベストアンサ解除ー-->
                             <v-btn color="red" text @click="releaseBestAnswer(item)">
@@ -105,10 +115,15 @@
                         <v-card-text>{{ item.answer_content }}</v-card-text>
                         <v-card-text>{{ item.answer_source_code }}</v-card-text>
                         <v-card-actions>
-                            <!--いいねボタン-->
-                            <v-btn color="orange" text @click="likeAnswer(index)">
+                            <!--高評価-->
+                            <v-btn color="green" text @click="likeAnswer(index)">
                                 <v-icon>mdi-thumb-up</v-icon>
                                 {{ item.answer_value }}
+                            </v-btn>
+                            <!--低評価-->
+                            <v-btn color="orange" text @click="BadAnswer(index)">
+                                <v-icon>mdi-thumb-down</v-icon>
+                                <!-- {{ item.answer_bad_value }} -->
                             </v-btn>
                             <!--ベストアンサー-->
                             <v-btn color="red" text @click="bestAnswer(item)">
@@ -173,6 +188,7 @@ import Header from "../components/Header.vue";
 import NavHelpBar from "../components/NavigationHelpBar.vue";
 import header from "/src/node/axios";
 import { User, Question, Answer } from "/src/node/class";
+import { thisExpression } from "@babel/types";
 
 const axios = header.setHeader();
 let user_id = 0;
@@ -192,6 +208,7 @@ const miner_password = process.env.VUE_APP_MINER_PASS;
 let g_answer_flag = true;
 
 
+
 export default {
     components: {
         Header,
@@ -207,7 +224,7 @@ export default {
             },
             eth_password: "",
             dialog: false,
-            valid: true,
+            valid: false,//trueが規定値
             loading: false,
             rules: {
                 answer_content: [
@@ -311,8 +328,8 @@ export default {
             this.pointDown(user_id, g_answer_flag);
             await QuestionClass.addNumberOfAnswers(question_id, g_answer_flag);
             console.log('回答数増加', g_answer_flag);
-            this.sendEmailQuestioner(this.answer_obj.answer_content, g_answer_flag);
-            console.log('メール通知', g_answer_flag)
+            // this.sendEmailQuestioner(this.answer_obj.answer_content, g_answer_flag);
+            // console.log('メール通知', g_answer_flag);
             //画面更新
             this.getAnyAnswer();
             this.dialog = false
@@ -371,21 +388,21 @@ export default {
         },
         //質問者に対して、回答通知メールを送る
         sendEmailQuestioner(answer_content, flag) {
-            if (flag) {
-                let _mail_obj = {
-                    subject: "質問に回答がありました",
-                    message: "[返信不可]" + answer_content,
-                    receipt_user_id: this.one_quesiton.user,
-                }
-                axios
-                    .post("/api/send-email/", _mail_obj)
-                    .then((res) => {
-                        console.log(res)
-                    })
-                    .catch((e) => {
-                        console.log(e)
-                    });
-            }
+            // if (flag) {
+            //     let _mail_obj = {
+            //         subject: "質問に回答がありました",
+            //         message: "[返信不可]" + answer_content,
+            //         receipt_user_id: this.one_quesiton.user,
+            //     }
+            //     axios
+            //         .post("/api/send-email/", _mail_obj)
+            //         .then((res) => {
+            //             console.log(res)
+            //         })
+            //         .catch((e) => {
+            //             console.log(e)
+            //         });
+            // }
         },
 
         //いいね機能
@@ -414,6 +431,38 @@ export default {
             }
             axios
                 .post("/api/answer-like/", answer_like_obj)
+                .then((res) => {
+                    console.log(res);
+                    console.log('評価が変更されました')
+                    this.getAnyAnswer()
+                })
+                .catch((e) => {
+                    console.log(e);
+                });
+        },
+        //bad機能追加
+        BadQuestion() {
+            const question_bad = {
+                user: user_id,
+                question_id: this.one_quesiton.id,
+            }
+            axios
+                .put("/api/question-bad/", question_bad)
+                .then(() => {
+                    console.log('評価が変更されました')
+                    this.getOneQuestion()
+                })
+                .catch((e) => {
+                    console.log(e);
+                });
+        },
+        BadAnswer(answer_index) {
+            let answer_bad = {
+                user: user_id,
+                answer_id: this.any_answer[answer_index].id
+            }
+            axios
+                .post("/api/answer-bad/", answer_bad)
                 .then((res) => {
                     console.log(res);
                     console.log('評価が変更されました')
@@ -510,7 +559,6 @@ export default {
                 });
             }
         },
-
         //解決機能
         //質問解決 questionclass ok
         resolvedQuestion() {
@@ -528,6 +576,13 @@ export default {
                         axios
                             .put("/api/update-question/" + question_id + "/", resolve)
                             .then(() => {
+                                //ここに処理をまとめる
+
+                                //回答者へ forループ
+                                for (let answer in this.any_answer) {
+                                    //calculationOfRewardEth
+                                    //rewardEth
+                                }
                                 Swal.fire(
                                     '質問が解決されました!',
                                     'success',
@@ -574,38 +629,46 @@ export default {
                 });
             }
         },
-        //質問解決解除 questionclass ok
-        releaseResolvedQuestion() {
-            if (user_id == this.one_quesiton.user) {
-                const release_resolve_obj = {
-                    user: this.one_quesiton.user,
-                    question_status: false
+        //報酬の計算
+        calculationOfRewardEth(object) {
+            if (object.bad_num < 5) {
+                let reward = 1;
+                //質問高評価
+                if (object.type == "question" && object.good_num > 4) {
+                    reward = reward + 5;
+                    console.log('質問高評価')
                 }
-                axios
-                    .put("/api/update-question/" + question_id + "/", release_resolve_obj)
-                    .then(() => {
-                        Swal.fire(
-                            '解決を取り消しました!',
-                            'success',
-                        )
-                        this.getOneQuestion()
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                    });
+                //回答ベストアンサー
+                else if (object.type == "answer" && object.best_ans) {
+                    reward = reward + 6;
+                    console.log('ベストアンサー')
+                    //ベストアンサーかつ高評価
+                    if (good_num > 4) {
+                        reward = reward + 1;
+                        console.log('高評価')
+                    }
+                }
+                //回答高評価
+                else if (object.type == "answer" && object.good_num > 4) {
+                    //回答報酬 2eth + 高評価 1eth
+                    reward = reward + 2;
+                    console.log('回答高評価')
+                }
+                //回答
+                else if (object.type = "answer") {
+                    reward = reward + 1;
+                    console.log('回答')
+                }
+                console.log("受け取り報酬:", reward)
+                return reward;
             }
+            //低評価多数 ethなし
             else {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Error",
-                    text: "質問者のみ有効です！",
-                    showConfirmButton: false,
-                    showCloseButton: false,
-                    timer: 3000,
-                });
+                console.log("低評価多数 eth没収")
+                return;
             }
         },
-        //質問者回答者へ報酬を与える userclass?
+        //報酬を与える userclass?
         async rewardEth(received_address, reward_eth) {
             const from = await web3.utils.toChecksumAddress(miner);
             const to = await web3.utils.toChecksumAddress(received_address);
@@ -621,10 +684,13 @@ export default {
                     console.log("受け取り完了");
                 });
         },
-        //質問したユーザーに対して，重要ではない
-        putSendPoint() {
+        //質問したユーザーに対してpoint計算[予備システム]
+        putSendPoint(reward_point) {
+            let update_point = {
+                "user_point": reward_point,
+            }
             axios
-                .put("/api/users/" + user_id + "/", update_obj)
+                .put("/api/users/" + user_id, update_point)
                 .then((res) => {
                     console.log(res);
                 })
@@ -632,22 +698,46 @@ export default {
                     console.log(e);
                 });
         },
-        log() {
+        //質問者へ報酬[質問者が解決を押したときの処理s]
+        async rewardQuestionUser() {
+            let cal_question_obj = {
+                "bad_num": this.one_quesiton.question_bad_value,
+                "type": "question",
+                "good_num": this.one_quesiton.question_value,
+                "best_ans": false,
+            }
+            //報酬の計算
+            const question_reward = this.calculationOfRewardEth(cal_question_obj);
+            //報酬eth
+            this.rewardEth(user_eth_address, question_reward);
+            //予備のpoint[mypageでバックupあるが、mypageに頻繁に行くとは限らない]
+            this.putSendPoint(question_reward);
+            console.log("質問者への報酬完了")
         },
-        async initialEth(received_address, value) {
-            const from = await web3.utils.toChecksumAddress(miner);
-            const to = await web3.utils.toChecksumAddress(received_address);
-            const transaction = {
-                from: from,
-                to: to,
-                value: value,
-            };
-            await web3.eth.personal
-                .unlockAccount(from, miner_password, 15000)
-                .then(() => {
-                    web3.eth.sendTransaction(transaction);
-                    console.log("受け取り完了");
-                });
+        //複数の回答者への報酬
+        async rewardAnswerUser() {
+            //まずthis.any_answerをforループ
+            for (let index in this.any_answer) {
+                let item = this.any_answer[index];
+                //報酬の計算
+                let cal_answer_obj = {
+                    "bad_num": item.answer_bad_value,
+                    "type": "answer",
+                    "good_num": item.answer_value,
+                    "best_ans": item.answer_best,
+                }
+                const answer_reward = this.calculationOfRewardEth(cal_answer_obj);
+                console.log('報酬:', answer_reward)
+                //報酬eth
+                // this.rewardEth("item.user_eth_address", answer_reward);
+                // //予備のpoint[mypageでバックupあるが、mypageに頻繁に行くとは限らない]
+                // this.putSendPoint(answer_reward);
+            }
+            console.log("回答者への報酬完了")
+        },
+
+        log() {
+            this.rewardAnswerUser();
         },
     },
 }
