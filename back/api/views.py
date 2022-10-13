@@ -46,8 +46,13 @@ class QuestionList(generics.ListAPIView):
     
     def get_queryset(self):
         flag = self.kwargs.get("flag")
-        if flag == "unresolved":
-            return Question.objects.filter(question_status=False)
+        group = self.kwargs.get("group")
+        #偶数
+        if flag == "unresolved" and group == "real_name":
+            return Question.objects.filter(question_status=False).filter(question_group=True)
+        #奇数
+        elif flag == "unresolved" and group == "anonymous":
+            return Question.objects.filter(question_status=False).filter(question_group=False)
         elif flag == "resolved":
             return Question.objects.filter(question_status=True)
         #未完成

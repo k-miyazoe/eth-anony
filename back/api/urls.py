@@ -14,7 +14,8 @@ urlpatterns = [
     path('user-eth-address/<slug:user_key>/',views.getUserEthAddress),
     
     #Question
-    path('get-question/<slug:flag>/', QuestionList.as_view()),
+    path('get-question/<slug:flag>/<slug:group>', QuestionList.as_view()),
+    #path('get-question/<slug:flag>/', QuestionList.as_view()),
     path('get-question/<pk>', QuestionGet.as_view()),
     path('create-question/', QuestionCreate.as_view()),
     path('update-question/<pk>/', QuestionUpdate.as_view()),

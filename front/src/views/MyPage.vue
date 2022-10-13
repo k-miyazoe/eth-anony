@@ -197,6 +197,9 @@ export default {
                 .then(() => {
                     web3.eth.sendTransaction(transaction);
                     Swal.fire("仮想通貨が送金できました", "success");
+                    //フォームを空にする
+                    this.forward_address = ""
+                    this.my_eth_password = ""
                 })
                 .catch((e) => {
                     console.log(e);
