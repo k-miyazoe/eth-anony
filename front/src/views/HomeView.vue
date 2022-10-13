@@ -27,7 +27,7 @@ import Header from "../components/Header.vue";
 import header from "/src/node/axios";
 const axios = header.setHeader();
 let g_group = null;
-let user_group = "";
+let user_group = "everyone";
 
 export default {
   components: {

@@ -53,6 +53,9 @@ class QuestionList(generics.ListAPIView):
         #奇数
         elif flag == "unresolved" and group == "anonymous":
             return Question.objects.filter(question_status=False).filter(question_group=False)
+        #全員
+        elif flag == "unresolved" and group == "everyone":
+            return Question.objects.filter(question_status=False)
         elif flag == "resolved":
             return Question.objects.filter(question_status=True)
         #未完成
