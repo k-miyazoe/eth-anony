@@ -1,7 +1,6 @@
-from http.client import HTTPResponse
 from pydoc import render_doc
 from rest_framework import generics, permissions
-from .models import User,Question,Answer,QuestionLike,AnswerLike
+from .models import User,Question,Answer,QuestionLike,AnswerLike,QuestionBad,AnswerBad
 from .serializers import UserSerializer,QuestionSerializer,AnswerSerializer
 from web3 import Web3
 import environ,json
@@ -13,7 +12,7 @@ from django.db.models import F
 env = environ.Env()
 env.read_env('back.env')
 
-#remote provider sets
+#remote provider sets 使用していない
 w3 = Web3(Web3.HTTPProvider(env('GETH_REMOTE_PROVIDERS')))
 
 class UserList(generics.ListAPIView):
@@ -129,7 +128,6 @@ def AddViews(request,pk):
             'result':"add views"
         }
     return JsonResponse(result);  
-
 #回答数増加機能
 @csrf_exempt
 def AddNumOfAnser(request,pk):
@@ -141,7 +139,7 @@ def AddNumOfAnser(request,pk):
 
 #質問いいね機能
 @csrf_exempt
-def Questionlike(request):
+def Question_like(request):
     json_dict = json.loads(request.body)
     get_user_id = json_dict["user"]
     get_question_id = json_dict['question_id']
@@ -178,7 +176,7 @@ def Questionlike(request):
 
 #回答いいね機能
 @csrf_exempt
-def Answerlike(request):
+def Answer_like(request):
     json_dict = json.loads(request.body)
     get_user_id = json_dict["user"]
     get_answer_id = json_dict['answer_id']
@@ -207,6 +205,68 @@ def Answerlike(request):
         like.save()
         context = {
         'result':"いいね"
+        }
+        return JsonResponse(context)
+
+#質問bad機能
+@csrf_exempt
+def Question_Bad(request):
+    json_dict = json.loads(request.body)
+    get_user_id = json_dict["user"]
+    get_question_id = json_dict['question_id']
+    user = User.objects.get(id=get_user_id)
+    question = Question.objects.get(id=get_question_id)
+    is_bad = QuestionBad.objects.filter(user=user).filter(question=question).count()
+    if is_bad > 0:
+        bad = QuestionBad.objects.get(question=question, user=user)
+        bad.delete()
+        #質問のbadを1減らす
+        question.question_bad_value -= 1
+        question.save()
+        context = {
+            'result':"bad取り消し"
+        }
+        return JsonResponse(context)
+    else:
+        question.question_bad_value += 1
+        question.save()
+        bad = QuestionBad()
+        bad.user = user
+        bad.question = question
+        bad.save()
+        context = {
+            'result':"bad追加"
+        }
+        return JsonResponse(context)
+
+#回答bad機能
+@csrf_exempt
+def Answer_Bad(request):
+    json_dict = json.loads(request.body)
+    get_user_id = json_dict["user"]
+    get_answer_id = json_dict['answer_id']
+    user = User.objects.get(id=get_user_id)
+    answer = Answer.objects.get(id=get_answer_id)
+    is_bad = AnswerBad.objects.filter(user=user).filter(answer=answer).count()
+    if is_bad > 0:
+        bad = AnswerBad.objects.get(user=user,answer=answer)
+        bad.delete()
+        answer.answer_bad_value -= 1
+        answer.save()
+        context = {
+            'result':"bad取り消し"
+        }
+        return JsonResponse(context)
+    # like
+    else:
+        answer.answer_bad_value += 1
+        answer.save()
+        bad = AnswerBad()
+        bad.user = user
+        bad.answer = answer
+        bad.save()
+        context = {
+            'result':"bad追加"
         }
         return JsonResponse(context)
 

@@ -1,9 +1,9 @@
 <template>
   <v-app>
     <Header />
-    <!-- <v-btn color="primary" @click="log">
+    <v-btn color="primary" @click="log">
       log button
-    </v-btn> -->
+    </v-btn>
     <v-main>
       <NavHelpBar />
       <v-container>
@@ -74,18 +74,18 @@ import header from "/src/node/axios";
 import { User, Question } from "/src/node/class";
 
 const axios = header.setHeader();
+
 let user_id = 0;
+let user_name = "";
 let user_eth_address = "";
 let user_group = null;
 let user_point = 0;
 let UserClass = null;
+
 const Web3 = require("web3");
 const web3 = new Web3(process.env.VUE_APP_GETH_API);
 const miner = process.env.VUE_APP_MINER;
 let g_question_flag = true;
-//後で消す
-const miner_password = "admin"
-
 
 export default {
   components: {
@@ -100,8 +100,10 @@ export default {
       valid: true,
       eth_password: "",
       question_obj: {
-        "user": this.$session.get('user_id'),
-        "question_user_name": this.$session.get("user_name"),
+        "user": 0,
+        "question_user_name": "",
+        "question_eth_address": "",
+        "question_group": null,
       },
       rules: {
         question_title: [
@@ -126,6 +128,7 @@ export default {
         router.push("/signin");
       }
       user_id = this.$session.get('user_id');
+      user_name = this.$session.get("user_name");
       user_eth_address = this.$session.get('user_eth_address');
       user_group = this.$session.get("user_group");
       UserClass = new User(user_id, axios);
@@ -147,6 +150,7 @@ export default {
       const question = new Question(axios);
       await this.getHasEth(user_eth_address, 1);
       await this.ethDown(user_eth_address, 1, this.eth_password, g_question_flag);
+      this.quesiotnInit();//追加
       question.post(this.question_obj, g_question_flag);
       await question.pointDown(user_id);
       this.questionResult(g_question_flag);
@@ -187,6 +191,14 @@ export default {
             g_question_flag = false;
           });
       }
+    },
+    //質問のobjectの初期化
+    quesiotnInit() {
+      this.question_obj.user = user_id;
+      this.question_obj.question_user_name = user_name;
+      //追加
+      this.question_obj.question_eth_address = user_eth_address;
+      this.question_obj.question_group = user_group;
     },
     questionResult(result) {
       if (result) {

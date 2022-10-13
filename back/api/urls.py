@@ -36,8 +36,12 @@ urlpatterns = [
     path('point-down/<int:user_id>/', views.PointDown),
     
     #Like
-    path('question-like/', views.Questionlike),
-    path('answer-like/', views.Answerlike),
+    path('question-like/', views.Question_like),
+    path('answer-like/', views.Answer_like),
+    
+    #Bad
+    path('question-bad/', views.Question_Bad),
+    path('answer-bad/', views.Answer_Bad),
     
     #Email
     path('send-email/',views.sendEmail)
