@@ -207,8 +207,6 @@ const miner = process.env.VUE_APP_MINER;
 const miner_password = process.env.VUE_APP_MINER_PASS;
 let g_answer_flag = true;
 
-
-
 export default {
     components: {
         Header,
@@ -313,10 +311,10 @@ export default {
         },
         //以下 イベント処理
 
-        //回答送信 回答が即時反映されない
+        //回答送信 サクセスダイヤログを後で追加
         async postAnswer() {
             this.loading = true
-            this.answer_obj["question_id"] = question_id;
+            this.answerInit();
             //ethがあるか確認
             this.getHasEth(user_eth_address, 1);
             //ethの消費
@@ -335,6 +333,11 @@ export default {
             this.dialog = false
             this.answer_obj = {}
             this.loading = false
+        },
+        answerInit() {
+            this.answer_obj["question_id"] = question_id;
+            //ethアドレス追加
+            this.answer_obj["answer_eth_address"] = user_eth_address;
         },
         //回答処理の中の関数
         async getHasEth(address, check_ether) {
@@ -576,13 +579,8 @@ export default {
                         axios
                             .put("/api/update-question/" + question_id + "/", resolve)
                             .then(() => {
-                                //ここに処理をまとめる
-
-                                //回答者へ forループ
-                                for (let answer in this.any_answer) {
-                                    //calculationOfRewardEth
-                                    //rewardEth
-                                }
+                                this.rewardQuestionUser();
+                                this.rewardAnswerUser();
                                 Swal.fire(
                                     '質問が解決されました!',
                                     'success',
@@ -638,14 +636,18 @@ export default {
                     reward = reward + 5;
                     console.log('質問高評価')
                 }
+                //無評価の質問
+                else if (object.type == "question") {
+                    console.log('無評価の質問')
+                }
                 //回答ベストアンサー
                 else if (object.type == "answer" && object.best_ans) {
                     reward = reward + 6;
                     console.log('ベストアンサー')
                     //ベストアンサーかつ高評価
-                    if (good_num > 4) {
+                    if (object.good_num > 4) {
                         reward = reward + 1;
-                        console.log('高評価')
+                        console.log('ベストアンサーかつ高評価')
                     }
                 }
                 //回答高評価
@@ -654,10 +656,10 @@ export default {
                     reward = reward + 2;
                     console.log('回答高評価')
                 }
-                //回答
+                //無評価の回答
                 else if (object.type = "answer") {
                     reward = reward + 1;
-                    console.log('回答')
+                    console.log('無評価の回答')
                 }
                 console.log("受け取り報酬:", reward)
                 return reward;
@@ -665,7 +667,7 @@ export default {
             //低評価多数 ethなし
             else {
                 console.log("低評価多数 eth没収")
-                return;
+                return 0;
             }
         },
         //報酬を与える userclass?
@@ -708,15 +710,14 @@ export default {
             }
             //報酬の計算
             const question_reward = this.calculationOfRewardEth(cal_question_obj);
-            //報酬eth
-            this.rewardEth(user_eth_address, question_reward);
+            //報酬eth 解決を押せるuserは必然的に質問者
+            await this.rewardEth(user_eth_address, question_reward);
             //予備のpoint[mypageでバックupあるが、mypageに頻繁に行くとは限らない]
             this.putSendPoint(question_reward);
             console.log("質問者への報酬完了")
         },
         //複数の回答者への報酬
         async rewardAnswerUser() {
-            //まずthis.any_answerをforループ
             for (let index in this.any_answer) {
                 let item = this.any_answer[index];
                 //報酬の計算
@@ -727,17 +728,15 @@ export default {
                     "best_ans": item.answer_best,
                 }
                 const answer_reward = this.calculationOfRewardEth(cal_answer_obj);
-                console.log('報酬:', answer_reward)
                 //報酬eth
-                // this.rewardEth("item.user_eth_address", answer_reward);
-                // //予備のpoint[mypageでバックupあるが、mypageに頻繁に行くとは限らない]
-                // this.putSendPoint(answer_reward);
+                await this.rewardEth(item.answer_eth_address, answer_reward);
+                //予備のpoint[mypageでバックupあるが、mypageに頻繁に行くとは限らない]
+                this.putSendPoint(answer_reward);
             }
             console.log("回答者への報酬完了")
         },
 
         log() {
-            this.rewardAnswerUser();
         },
     },
 }

@@ -26,6 +26,8 @@
 import Header from "../components/Header.vue";
 import header from "/src/node/axios";
 const axios = header.setHeader();
+let g_group = null;
+let user_group = "";
 
 export default {
   components: {
@@ -41,13 +43,32 @@ export default {
     }
   },
   mounted() {
+    this.checkToken();
     this.getUnresolvedQuestion();
   },
   methods: {
+    checkToken() {
+      if (this.$session.has("token")) {
+        g_group = this.$session.get("user_group");
+        this.getGroup();
+        console.log('グループ', user_group)
+      }
+    },
+    getGroup() {
+      //偶数の実名グループ
+      if (g_group) {
+        user_group = "real_name"
+      }
+      //奇数の匿名グループ
+      else {
+        user_group = "anonymous"
+      }
+    },
+    //groupを追加
     //3つのゲット関数は引数に文字列を与えてやれば、一つの関数で済む
     getUnresolvedQuestion() {
       axios
-        .get("/api/get-question/unresolved/")
+        .get("/api/get-question/unresolved/" + user_group)
         .then((res) => {
           this.unresolved_question = res.data;
         })
