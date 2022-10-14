@@ -4,9 +4,9 @@
         <v-main>
             <NavHelpBar />
             <v-container fluid>
-                <v-btn color="primary" @click="log">
+                <!-- <v-btn color="primary" @click="log">
                     log button
-                </v-btn>
+                </v-btn> -->
                 <!--質問詳細-->
                 <!--解決済み-->
                 <div v-if="one_quesiton.question_status">
