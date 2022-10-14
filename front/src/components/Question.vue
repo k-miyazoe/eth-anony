@@ -1,9 +1,9 @@
 <template>
   <v-app>
     <Header />
-    <v-btn color="primary" @click="log">
+    <!-- <v-btn color="primary" @click="log">
       log button
-    </v-btn>
+    </v-btn> -->
     <v-main>
       <NavHelpBar />
       <v-container>
