@@ -4,9 +4,9 @@
         <v-main>
             <NavHelpBar />
             <v-container fluid>
-                <!-- <v-btn color="primary" @click="log">
+                <v-btn color="primary" @click="log">
                     log button
-                </v-btn> -->
+                </v-btn>
                 <!--質問詳細-->
                 <!--解決済み-->
                 <div v-if="one_quesiton.question_status">
@@ -288,7 +288,7 @@ export default {
                 });
             console.log('回答取得')
         },
-        //ベストアンサーがあるか確認 booleanをセットする イベント呼び出しされるfunc
+        //ベストアンサーがあるか確認 変更
         checkHasBestAnswer() {
             for (let item of this.any_answer) {
                 if (item.answer_best == true) {
@@ -477,7 +477,31 @@ export default {
         },
 
         //bestanswer機能
-        //bestanswer処理　answerclass ok
+        //bestanswer処理　answerclass ok 変更
+        autoBestAnswer() {
+            this.searchBestAnswer(this.any_answer);
+        },
+        //高評価が最大の回答を探す template部分からanswersデータを受け取る
+        searchBestAnswer(answers) {
+            let max_value = 0;
+            let best_answers = [];
+            //最大高評価を保存
+            for (let item in answers) {
+                //ここがうまくいっていない
+                if (max_value < item.answer_value) {
+                    max_value = item.answer_value;
+                }
+            }
+            console.log('max_value',max_value)
+            //bestanswerを保存
+            for (let best in answers) {
+                if (best.answer_bad_value < 5 && best.answer_value == max_value) {
+                    best_answers.push[best];
+                }
+            }
+            console.log('best answer',best_answers)
+        },
+        //これ必要なし
         bestAnswer(answer) {
             //bestアンサーがすでに存在している場合 ここが動いてない
             if (this.checkHasBestAnswer()) {
@@ -527,7 +551,7 @@ export default {
                 }
             }
         },
-        //bestanswer解除処理 answerclass ok
+        //bestanswer解除処理 answerclass 変更 必要なし
         releaseBestAnswer(answer) {
             if (user_id == this.one_quesiton.user && !this.one_quesiton.question_status) {
                 const not_best_answer = {
@@ -563,7 +587,7 @@ export default {
             }
         },
         //解決機能
-        //質問解決 questionclass ok
+        //質問解決 questionclass ok 変更
         resolvedQuestion() {
             //質問者の場合
             if (user_id == this.one_quesiton.user) {
@@ -591,7 +615,7 @@ export default {
                                 console.log(e);
                             });
                     }
-                    //ベストアンサーが存在してない場合
+                    //ベストアンサーが存在してない場合　変更
                     else {
                         Swal.fire({
                             icon: "warning",
@@ -700,7 +724,7 @@ export default {
                     console.log(e);
                 });
         },
-        //質問者へ報酬[質問者が解決を押したときの処理s]
+        //質問者へ報酬[質問者が解決を押したときの処理]
         async rewardQuestionUser() {
             let cal_question_obj = {
                 "bad_num": this.one_quesiton.question_bad_value,
@@ -737,6 +761,7 @@ export default {
         },
 
         log() {
+            this.autoBestAnswer()
         },
     },
 }
