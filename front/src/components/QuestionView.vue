@@ -102,10 +102,6 @@
                                 <v-icon>mdi-thumb-down</v-icon>
                                 <!-- {{ item.answer_bad_value }} -->
                             </v-btn>
-                            <!--ベストアンサ解除ー-->
-                            <v-btn color="red" text @click="releaseBestAnswer(item)">
-                                解除
-                            </v-btn>
                         </v-card-actions>
                     </div>
                     <!--ベストアンサーではない回答-->
@@ -124,10 +120,6 @@
                             <v-btn color="orange" text @click="BadAnswer(index)">
                                 <v-icon>mdi-thumb-down</v-icon>
                                 <!-- {{ item.answer_bad_value }} -->
-                            </v-btn>
-                            <!--ベストアンサー-->
-                            <v-btn color="red" text @click="bestAnswer(item)">
-                                ベストアンサー
                             </v-btn>
                         </v-card-actions>
                     </div>
@@ -477,30 +469,47 @@ export default {
         },
 
         //bestanswer機能
-        //bestanswer処理　answerclass ok 変更
+        //このページ内のanswer_bestを更新する[呼び出し回数1] 2
         autoBestAnswer() {
-            this.searchBestAnswer(this.any_answer);
+            const max_value = this.searchBestAnswer(this.any_answer);
+            for (let best in this.any_answer) {
+                //低評価5未満かつ高評価Max
+                if (this.any_answer[best].answer_bad_value < 5 && this.any_answer[best].answer_value == max_value) {
+                    //ベストアンサーの更新
+                    this.any_answer[best].answer_best = true;
+                }
+            }
         },
-        //高評価が最大の回答を探す template部分からanswersデータを受け取る
+        //最高高評価の値を返す[呼び出し回数1]ok 1
         searchBestAnswer(answers) {
             let max_value = 0;
-            let best_answers = [];
-            //最大高評価を保存
             for (let item in answers) {
-                //ここがうまくいっていない
-                if (max_value < item.answer_value) {
-                    max_value = item.answer_value;
+                if (max_value < answers[item].answer_value) {
+                    max_value = answers[item].answer_value;
                 }
             }
-            console.log('max_value',max_value)
-            //bestanswerを保存
-            for (let best in answers) {
-                if (best.answer_bad_value < 5 && best.answer_value == max_value) {
-                    best_answers.push[best];
-                }
-            }
-            console.log('best answer',best_answers)
+            console.log(max_value)
+            return max_value
         },
+        //回答に評価がない場合評価をリクエスト 0
+        checkAnswerValue(){
+            let flag = false;
+            for(let index in this.any_answer){
+                if(this.any_answer[index].answer_value > 0){
+                    flag = true;
+                }
+            }
+            if(!flag){
+                Swal.fire({
+                    icon: "warning",
+                    title: "Error",
+                    text: "回答を評価してください！",
+                    showConfirmButton: false,
+                    showCloseButton: false,
+                    timer: 3000,
+                });
+            }
+        }
         //これ必要なし
         bestAnswer(answer) {
             //bestアンサーがすでに存在している場合 ここが動いてない
@@ -742,6 +751,7 @@ export default {
         },
         //複数の回答者への報酬
         async rewardAnswerUser() {
+            //this.any_answerを変更するかも
             for (let index in this.any_answer) {
                 let item = this.any_answer[index];
                 //報酬の計算
@@ -759,11 +769,9 @@ export default {
             }
             console.log("回答者への報酬完了")
         },
-
         log() {
-            this.autoBestAnswer()
         },
-    },
+    }
 }
 </script>
 <style>
