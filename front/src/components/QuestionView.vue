@@ -4,9 +4,12 @@
         <v-main>
             <NavHelpBar />
             <v-container fluid>
-                <v-btn color="primary" @click="log">
+                <!--v-btn color="primary" @click="log">
                     log button
-                </v-btn>
+                </v-btn-->
+                <v-layout row fill-height justify-center align-center v-if="loading">
+                    <v-progress-circular :size="50" color="primary" indeterminate />
+                </v-layout>
                 <!--質問詳細-->
                 <!--解決済み-->
                 <div v-if="one_quesiton.question_status">
@@ -214,8 +217,8 @@ export default {
             },
             eth_password: "",
             dialog: false,
-            valid: false,//trueが規定値
-            loading: false,
+            valid: true,
+            loading: true,
             rules: {
                 answer_content: [
                     (v) => !!v || "回答内容は必須です",
@@ -232,7 +235,7 @@ export default {
         await this.getOneQuestion()
         await this.getAnyAnswer()
         await this.addViewsQuestion()
-        await this.checkHasBestAnswer()
+        //await this.checkHasBestAnswer()
     },
     methods: {
         checkToken() {
@@ -293,28 +296,28 @@ export default {
         },
         //以下 イベント処理
 
-        //回答送信 サクセスダイヤログを後で追加
+        //回答送信
         async postAnswer() {
-            this.loading = true
+            this.loading = true;
             this.answerInit();
             //ethがあるか確認
             this.getHasEth(user_eth_address, 1);
             //ethの消費
             await this.ethDown(user_eth_address, 1, this.eth_password, g_answer_flag);
-            console.log('ethの消費', g_answer_flag)
+            //console.log('ethの消費', g_answer_flag)
             //回答する
             await AnswerClass.postAnswer(this.answer_obj, g_answer_flag);
-            console.log('回答投稿', g_answer_flag)
+            //console.log('回答投稿', g_answer_flag);
             this.pointDown(user_id, g_answer_flag);
             await QuestionClass.addNumberOfAnswers(question_id, g_answer_flag);
-            console.log('回答数増加', g_answer_flag);
+            //console.log('回答数増加', g_answer_flag);
             // this.sendEmailQuestioner(this.answer_obj.answer_content, g_answer_flag);
             // console.log('メール通知', g_answer_flag);
             //画面更新
             this.getAnyAnswer();
-            this.dialog = false
-            this.answer_obj = {}
-            this.loading = false
+            this.dialog = false;
+            this.answer_obj = {};
+            this.loading = false;
         },
         answerInit() {
             this.answer_obj["question_id"] = question_id;

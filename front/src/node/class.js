@@ -60,8 +60,8 @@ const Question = class {
         console.log(e);
       });
   }
-  post(question,flag) {
-    if(flag){
+  post(question, flag) {
+    if (flag) {
       this.axios
         .post("/api/create-question/", question)
         .then(() => {
@@ -82,20 +82,20 @@ const Question = class {
     } else {
       return false;
     }
-    
+
   }
   successMessage(flag) {
-    if(flag){
+    if (flag) {
       Swal.fire("Goo job!", "success");
     } else {
-       Swal.fire({
-         icon: "warning",
-         title: "Error",
-         text: "質問できませんでした!",
-         showConfirmButton: false,
-         showCloseButton: false,
-         timer: 3000,
-       });
+      Swal.fire({
+        icon: "warning",
+        title: "Error",
+        text: "質問できませんでした!",
+        showConfirmButton: false,
+        showCloseButton: false,
+        timer: 3000,
+      });
     }
   }
   pointUp(question_user_id) {
@@ -111,17 +111,17 @@ const Question = class {
   //質問した際のpointダウン 返り値なし
   async pointDown(question_user_id) {
     await this.axios
-        .put("/api/point-down/" + question_user_id + "/")
-        .then(() => {
-          console.log("point down");
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+      .put("/api/point-down/" + question_user_id + "/")
+      .then(() => {
+        console.log("point down");
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   }
   //質問の回答数追加
-  addNumberOfAnswers(question_id,flag) {
-    if(flag){
+  addNumberOfAnswers(question_id, flag) {
+    if (flag) {
       this.axios
         .put("/api/add-num-answer/" + question_id + "/")
         .then((res) => {
@@ -200,7 +200,7 @@ const Question = class {
     }
   }
   //質問解決取り消し 未完成
-  releaseResolvedQuestion() {}
+  releaseResolvedQuestion() { }
 };
 
 const Answer = class {
@@ -228,12 +228,16 @@ const Answer = class {
     }
     return best_answer_decision;
   }
-  postAnswer(answer,flag) {
-    if(flag) {
+  postAnswer(answer, flag) {
+    if (flag) {
       this.axios
         .post("/api/create-answer/", answer)
         .then((res) => {
           console.log(res);
+          Swal.fire(
+            '回答を投稿しました!',
+            'success',
+          )
         })
         .catch(() => {
           Swal.fire({
@@ -247,8 +251,8 @@ const Answer = class {
         });
     }
   }
-  pointDown(answer_user_id,flag) {
-    if(flag) {
+  pointDown(answer_user_id, flag) {
+    if (flag) {
       this.axios
         .put("/api/point-down/" + answer_user_id + "/")
         .then(() => {
