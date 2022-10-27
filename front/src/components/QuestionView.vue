@@ -218,7 +218,7 @@ export default {
             eth_password: "",
             dialog: false,
             valid: true,
-            loading: true,
+            loading: false,
             rules: {
                 answer_content: [
                     (v) => !!v || "回答内容は必須です",
