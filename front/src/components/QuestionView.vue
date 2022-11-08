@@ -301,7 +301,7 @@ export default {
         //閲覧数増加 ok
         addViewsQuestion() {
             axios
-                .put("/api/add-views-question/" + question_id + "/")
+                .put("/api/add-views-question/" + question_id)
                 .then(() => {
                     console.log('閲覧数追加')
                 })
@@ -380,7 +380,7 @@ export default {
         pointDown(answer_user_id, flag) {
             if (flag) {
                 axios
-                    .put("/api/point-down/" + answer_user_id + "/")
+                    .put("/api/point-down/" + answer_user_id)
                     .then(() => {
                         console.log("point down");
                     })
@@ -492,14 +492,14 @@ export default {
                     max_value = item.answer_value;
                 }
             }
-            console.log('max_value',max_value)
+            console.log('max_value', max_value)
             //bestanswerを保存
             for (let best in answers) {
                 if (best.answer_bad_value < 5 && best.answer_value == max_value) {
                     best_answers.push[best];
                 }
             }
-            console.log('best answer',best_answers)
+            console.log('best answer', best_answers)
         },
         //これ必要なし
         bestAnswer(answer) {
@@ -524,7 +524,7 @@ export default {
                         answer_best: true
                     }
                     axios
-                        .put("/api/update-answer/" + answer.id + "/", answer_update_obj)
+                        .put("/api/update-answer/" + answer.id, answer_update_obj)
                         .then(() => {
                             best_answer = true;
                             Swal.fire(
@@ -552,40 +552,40 @@ export default {
             }
         },
         //bestanswer解除処理 answerclass 変更 必要なし
-        releaseBestAnswer(answer) {
-            if (user_id == this.one_quesiton.user && !this.one_quesiton.question_status) {
-                const not_best_answer = {
-                    user: this.one_quesiton.user,
-                    question_id: question_id,
-                    answer_best: false
-                }
-                axios
-                    .put("/api/update-answer/" + answer.id + "/", not_best_answer)
-                    .then(() => {
-                        best_answer = false;
-                        Swal.fire(
-                            'ベストアンサーを解除しました!',
-                            'success',
-                        )
-                        //ページの更新
-                        this.getAnyAnswer()
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                    });
-            }
-            //質問者でないユーザーはできない
-            else {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Error",
-                    text: "質問者のみベストアンサーを解除できます.また解決済みの場合ベストアンサーは解除できません",
-                    showConfirmButton: false,
-                    showCloseButton: false,
-                    timer: 3000,
-                });
-            }
-        },
+        // releaseBestAnswer(answer) {
+        //     if (user_id == this.one_quesiton.user && !this.one_quesiton.question_status) {
+        //         const not_best_answer = {
+        //             user: this.one_quesiton.user,
+        //             question_id: question_id,
+        //             answer_best: false
+        //         }
+        //         axios
+        //             .put("/api/update-answer/" + answer.id, not_best_answer)
+        //             .then(() => {
+        //                 best_answer = false;
+        //                 Swal.fire(
+        //                     'ベストアンサーを解除しました!',
+        //                     'success',
+        //                 )
+        //                 //ページの更新
+        //                 this.getAnyAnswer()
+        //             })
+        //             .catch((e) => {
+        //                 console.log(e);
+        //             });
+        //     }
+        //     //質問者でないユーザーはできない
+        //     else {
+        //         Swal.fire({
+        //             icon: "warning",
+        //             title: "Error",
+        //             text: "質問者のみベストアンサーを解除できます.また解決済みの場合ベストアンサーは解除できません",
+        //             showConfirmButton: false,
+        //             showCloseButton: false,
+        //             timer: 3000,
+        //         });
+        //     }
+        // },
         //解決機能
         //質問解決 questionclass ok 変更
         resolvedQuestion() {
@@ -601,7 +601,7 @@ export default {
                             question_status: true
                         }
                         axios
-                            .put("/api/update-question/" + question_id + "/", resolve)
+                            .put("/api/update-question/" + question_id, resolve)
                             .then(() => {
                                 this.rewardQuestionUser();
                                 this.rewardAnswerUser();

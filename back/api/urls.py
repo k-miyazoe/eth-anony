@@ -18,11 +18,11 @@ urlpatterns = [
     #path('get-question/<slug:flag>/', QuestionList.as_view()),
     path('get-question/<pk>', QuestionGet.as_view()),
     path('create-question/', QuestionCreate.as_view()),
-    path('update-question/<pk>/', QuestionUpdate.as_view()),
+    path('update-question/<pk>', QuestionUpdate.as_view()),
     #閲覧数追加
-    path('add-views-question/<pk>/', views.AddViews),
+    path('add-views-question/<pk>', views.AddViews),
     #回答数追加
-    path('add-num-answer/<pk>/',views.AddNumOfAnser),
+    path('add-num-answer/<pk>',views.AddNumOfAnser),
     #閲覧回数追加
     # path('search-question/<slug:flag>', QuestionSearch.as_view()),
     
@@ -30,11 +30,11 @@ urlpatterns = [
     path('get-answer/<int:question_id>/', AnswerGet.as_view()),
     path('create-answer/', AnswerCreate.as_view()),
     #bestanswer処理など
-    path('update-answer/<pk>/', AnswerUpdate.as_view()),
+    path('update-answer/<pk>', AnswerUpdate.as_view()),
     
     #Point
-    path('point-up/<int:user_id>/', views.PointUp),
-    path('point-down/<int:user_id>/', views.PointDown),
+    path('point-up/<int:user_id>', views.PointUp),
+    path('point-down/<int:user_id>', views.PointDown),
     
     #Like
     path('question-like/', views.Question_like),
