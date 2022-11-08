@@ -198,7 +198,7 @@ const Question = class {
     }
   }
   //質問解決取り消し 未完成
-  releaseResolvedQuestion() {}
+  releaseResolvedQuestion() { }
 };
 
 const Answer = class {
@@ -232,6 +232,10 @@ const Answer = class {
         .post("/api/create-answer/", answer)
         .then((res) => {
           console.log(res);
+          Swal.fire(
+            '回答を投稿しました!',
+            'success',
+          )
         })
         .catch(() => {
           Swal.fire({
