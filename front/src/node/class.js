@@ -1,6 +1,5 @@
 import Swal from "sweetalert2";
 
-
 const User = class {
   constructor(user_id, axios) {
     this.user_id = user_id;
@@ -19,7 +18,7 @@ const User = class {
   }
   sendPoint(point_get_user) {
     this.axios
-      .put("/api/point-up/" + point_get_user + "/")
+      .put("/api/point-up/" + point_get_user)
       .then(() => {
         console.log("ポイントを追加しました");
       })
@@ -30,7 +29,7 @@ const User = class {
   //backendの方も未完成
   sendEther(ether_get_user) {
     this.axios
-      .put("/api/users/" + ether_get_user + "/")
+      .put("/api/users/" + ether_get_user)
       .then(() => {
         console.log("ether get");
       })
@@ -82,7 +81,6 @@ const Question = class {
     } else {
       return false;
     }
-
   }
   successMessage(flag) {
     if (flag) {
@@ -100,7 +98,7 @@ const Question = class {
   }
   pointUp(question_user_id) {
     this.axios
-      .put("/api/point-up/" + question_user_id + "/")
+      .put("/api/point-up/" + question_user_id)
       .then(() => {
         console.log("point up");
       })
@@ -111,7 +109,7 @@ const Question = class {
   //質問した際のpointダウン 返り値なし
   async pointDown(question_user_id) {
     await this.axios
-      .put("/api/point-down/" + question_user_id + "/")
+      .put("/api/point-down/" + question_user_id)
       .then(() => {
         console.log("point down");
       })
@@ -123,7 +121,7 @@ const Question = class {
   addNumberOfAnswers(question_id, flag) {
     if (flag) {
       this.axios
-        .put("/api/add-num-answer/" + question_id + "/")
+        .put("/api/add-num-answer/" + question_id)
         .then((res) => {
           console.log(res);
         })
@@ -155,7 +153,7 @@ const Question = class {
             question_status: true,
           };
           this.axios
-            .put("/api/update-question/" + this.question_id + "/", resolve)
+            .put("/api/update-question/" + this.question_id, resolve)
             .then(() => {
               Swal.fire("質問が解決されました!", "success");
             })
@@ -254,7 +252,7 @@ const Answer = class {
   pointDown(answer_user_id, flag) {
     if (flag) {
       this.axios
-        .put("/api/point-down/" + answer_user_id + "/")
+        .put("/api/point-down/" + answer_user_id)
         .then(() => {
           console.log("point down");
           return true;
