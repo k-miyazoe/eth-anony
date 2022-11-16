@@ -94,6 +94,8 @@ export default {
         this.getUserInfo();
         this.checkGeth();
         this.getHasEthAndBackup();
+        //bug-fix method
+        this.autoUpdateUser_nameOfTokumeiUserAccount()
     },
     methods: {
         checkToken() {
@@ -123,7 +125,7 @@ export default {
                     this.user_info = res.data;
                 })
                 .catch((e) => {
-                    console.log(e);
+                    console.log("ユーザー情報取得失敗",e);
                 });
         },
         //所持ethを取得　+ バックアップ
@@ -154,6 +156,26 @@ export default {
                 .catch(() => {
                     console.log("バックアップに失敗しました");
                 });
+        },
+        //追加　匿名アカウントのuser_nameを自動登録 1人1回のみ
+        //this.user_infoの中身を見たい
+        autoUpdateUser_nameOfTokumeiUserAccount(){
+            console.log("自動更新メソッド");
+            const update_user_name = {
+                id: user_id,
+                user_name: "匿名"
+            }
+            const now_user_name = this.$session.get('user_name')
+            if(now_user_name == ""){
+                axios
+                    .put("/api/users/" + user_id,update_user_name)
+                    .then(() => {
+                        console.log("情報更新成功")
+                    })
+                    .catch((e) => {
+                        console.log("ユーザー情報更新失敗",e);
+                    });
+            }
         },
 
         //イベント処理

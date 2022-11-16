@@ -680,6 +680,7 @@ export default {
             console.log("回答者への報酬完了")
         },
         log() {
+            console.log("回答データの初期状態確認",this.answer_obj)
         },
     }
 }
