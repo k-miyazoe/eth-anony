@@ -79,6 +79,7 @@ const Question = class {
           return false;
         });
     } else {
+      //質問投稿をスキップして次の処理へ
       return false;
     }
   }

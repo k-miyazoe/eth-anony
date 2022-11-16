@@ -1,9 +1,9 @@
 <template>
   <v-app>
     <Header />
-    <!-- <v-btn color="primary" @click="log">
+    <v-btn color="primary" @click="log">
       log button
-    </v-btn> -->
+    </v-btn>
     <!-- <v-text>ユーザーIDとパスワードは重要なのでメモをお願いします</v-text>
     <v-text>実名アカウントとは違うユーザーID,パスワードを登録してください</v-text> -->
     <v-container grid-list-md>
@@ -92,7 +92,9 @@ export default {
   },
   data: () => ({
     main_account: {},
-    sub_account: {},
+    sub_account: {
+      user_name: "匿名"
+    },
     valid: true,
     loading: false,
     check_password_main: "",
@@ -137,6 +139,7 @@ export default {
         }
       );
     },
+    //イベント処理
     async signUp() {
       this.loading = true;
       let flag = true;
@@ -292,6 +295,7 @@ export default {
       //初期のpointを与える
       const student_num = this.getStudentNumber(this.main_account.user_email);
       account.user_group = this.groupingAccount(student_num);
+      console.log('アカウントグループ',account.user_group)
       account.user_eth_password = account.password;
       account.user_point = point;
       account.user_eth_address = eth_address;
