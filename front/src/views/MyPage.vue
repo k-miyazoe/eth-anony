@@ -159,22 +159,23 @@ export default {
         },
         //追加　匿名アカウントのuser_nameを自動登録 1人1回のみ
         //this.user_infoの中身を見たい
-        autoUpdateUser_nameOfTokumeiUserAccount(){
-            console.log("自動更新メソッド");
+        async autoUpdateUser_nameOfTokumeiUserAccount(){
+            
             const update_user_name = {
                 id: user_id,
                 user_name: "匿名"
             }
             const now_user_name = this.$session.get('user_name')
             if(now_user_name == ""){
-                axios
-                    .put("/api/users/" + user_id,update_user_name)
-                    .then(() => {
-                        console.log("情報更新成功")
-                    })
-                    .catch((e) => {
-                        console.log("ユーザー情報更新失敗",e);
-                    });
+                console.log("自動更新メソッド");
+                await axios
+                        .put("/api/users/" + user_id,update_user_name)
+                        .then(() => {
+                            console.log("情報更新成功")
+                        })
+                        .catch((e) => {
+                            console.log("ユーザー情報更新失敗",e);
+                        });
             }
         },
 
