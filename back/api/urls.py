@@ -11,7 +11,7 @@ urlpatterns = [
     path('users/<pk>', UserRetrieveUpdate.as_view()),
     path('user-delete/<pk>/', UserDelete.as_view()),
     #user_keyでユーザー情報を取得
-    path('user-eth-address/<slug:user_key>/',views.getUserEthAddress),
+    path('user-eth-address/<slug:user_key>',views.getUserEthAddress),
     
     #Question
     path('get-question/<slug:flag>/<slug:group>', QuestionList.as_view()),
