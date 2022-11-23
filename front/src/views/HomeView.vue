@@ -2,6 +2,8 @@
   <v-app>
     <Header />
     <v-main>
+      <SubTitle />
+      <v-spacer />
       <v-row class="justify-center">
         <v-btn @click="routerPushCreateQuestion">質問する</v-btn>
       </v-row>
@@ -24,6 +26,7 @@
 
 <script>
 import Header from "../components/Header.vue";
+import SubTitle from "../components/SubTitle.vue";
 import header from "/src/node/axios";
 const axios = header.setHeader();
 let g_group = null;
@@ -32,6 +35,7 @@ let user_group = "everyone";
 export default {
   components: {
     Header,
+    SubTitle,
   },
   data() {
     return {
