@@ -27,7 +27,7 @@ urlpatterns = [
     # path('search-question/<slug:flag>', QuestionSearch.as_view()),
     
     #Answer
-    path('get-answer/<int:question_id>/', AnswerGet.as_view()),
+    path('get-answer/<int:question_id>', AnswerGet.as_view()),
     path('create-answer/', AnswerCreate.as_view()),
     #bestanswer処理など
     path('update-answer/<pk>', AnswerUpdate.as_view()),
