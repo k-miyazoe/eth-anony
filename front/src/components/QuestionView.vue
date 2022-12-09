@@ -36,10 +36,6 @@
                                     <v-icon>mdi-thumb-up</v-icon>
                                     {{ one_quesiton.question_value }}
                                 </v-btn>
-                                <!--解決を解除-->
-                                <!-- <v-btn color="green" text @click="releaseResolvedQuestion">
-                                    解決取り消し
-                                </v-btn> -->
                             </v-card-actions>
                         </v-col>
                     </v-card>
@@ -47,39 +43,32 @@
                 <!--未解決-->
                 <div v-else>
                     <v-card class="mx-auto" max-height="344">
-                        <v-col class="mb-10">
-                            <!--質問タイトル-->
-                            <v-card-title>質問 {{ one_quesiton.question_title }}
-                                <v-card-subtitle>質問者:{{ one_quesiton.question_user_name }}</v-card-subtitle>
-                            </v-card-title>
-                            <!--質問内容-->
-                            <v-card>
-                                <v-card-subtitle>内容</v-card-subtitle>
-                                <v-card-text>{{ one_quesiton.question_content }}</v-card-text>
-                            </v-card>
-                            <!--ソースコード-->
-                            <v-card>
-                                <v-card-subtitle>ソースコード</v-card-subtitle>
-                                <v-card-text>{{ one_quesiton.question_source_code }}</v-card-text>
-                            </v-card>
-
-                            <v-card-actions>
-                                <!--高評価-->
-                                <v-btn color="green" text @click="likeQuestion">
-                                    <v-icon>mdi-thumb-up</v-icon>
-                                    {{ one_quesiton.question_value }}
-                                </v-btn>
-                                <!--低評価-->
-                                <v-btn color="orange" text @click="BadQuestion">
-                                    <v-icon>mdi-thumb-down</v-icon>
-                                    <!-- {{ one_quesiton.question_bad_value }} -->
-                                </v-btn>
-                                <!--解決-->
-                                <v-btn color="green" text @click="resolvedQuestion" :disabled="!valid">
-                                    解決
-                                </v-btn>
-                            </v-card-actions>
-                        </v-col>
+                        <!--質問タイトル-->
+                        <v-card-title>質問 {{ one_quesiton.question_title }}
+                            <v-card-subtitle>質問者:{{ one_quesiton.question_user_name }}</v-card-subtitle>
+                        </v-card-title>
+                        <!--質問内容-->
+                        <v-card-subtitle class="font-weight-black">内容</v-card-subtitle>
+                        <v-card-text>{{ one_quesiton.question_content }}</v-card-text>
+                        <!--ソースコード-->
+                        <v-card-subtitle class="font-weight-black">ソースコード</v-card-subtitle>
+                        <v-card-text>{{ one_quesiton.question_source_code }}</v-card-text>
+                        <v-card-actions>
+                            <!--高評価-->
+                            <v-btn color="green" text @click="likeQuestion">
+                                <v-icon>mdi-thumb-up</v-icon>
+                                {{ one_quesiton.question_value }}
+                            </v-btn>
+                            <!--低評価-->
+                            <v-btn color="orange" text @click="BadQuestion">
+                                <v-icon>mdi-thumb-down</v-icon>
+                                <!-- {{ one_quesiton.question_bad_value }} -->
+                            </v-btn>
+                            <!--解決-->
+                            <v-btn color="green" text @click="resolvedQuestion" :disabled="!valid">
+                                解決
+                            </v-btn>
+                        </v-card-actions>
                     </v-card>
                 </div>
                 <v-divider></v-divider>
