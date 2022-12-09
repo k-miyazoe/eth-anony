@@ -4,9 +4,9 @@
         <v-main>
             <NavHelpBar />
             <v-container fluid>
-                <v-btn color="primary" @click="log">
+                <!-- <v-btn color="primary" @click="log">
                     log button
-                </v-btn>
+                </v-btn> -->
                 <v-layout row fill-height justify-center align-center v-if="loading">
                     <v-progress-circular :size="50" color="primary" indeterminate />
                 </v-layout>
