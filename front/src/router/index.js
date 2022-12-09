@@ -1,15 +1,14 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import SignUp from '../views/SignUp.vue'
-import SignIn from '../views/SignIn.vue'
-import MyPage from '../views/MyPage.vue'
-import Question from '../components/Question.vue'
-import QuestionView from '../components/QuestionView.vue'
-import NotFoundComponent from '../components/NotFoundComponent.vue'
+import Vue from "vue";
+import VueRouter from "vue-router";
+import HomeView from "../views/HomeView.vue";
+import SignUp from "../views/SignUp.vue";
+import SignIn from "../views/SignIn.vue";
+import MyPage from "../views/MyPage.vue";
+import Question from "../components/Question.vue";
+import QuestionView from "../components/QuestionView.vue";
+import NotFoundComponent from "../components/NotFoundComponent.vue";
 
-
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 const routes = [
   {
@@ -55,8 +54,8 @@ const routes = [
 ];
 
 const router = new VueRouter({
-  mode: 'history',
-  routes
-})
+  // mode: 'history',
+  routes,
+});
 
-export default router
+export default router;

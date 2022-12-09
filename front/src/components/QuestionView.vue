@@ -4,9 +4,9 @@
         <v-main>
             <NavHelpBar />
             <v-container fluid>
-                <!--v-btn color="primary" @click="log">
+                <v-btn color="primary" @click="log">
                     log button
-                </v-btn-->
+                </v-btn>
                 <v-layout row fill-height justify-center align-center v-if="loading">
                     <v-progress-circular :size="50" color="primary" indeterminate />
                 </v-layout>
@@ -374,7 +374,7 @@ export default {
                     });
             }
         },
-        //質問者に対して、回答通知メールを送る
+        //質問者に対して、回答通知メールを送る[未組み込み]
         sendEmailQuestioner(answer_content, flag) {
             // if (flag) {
             //     let _mail_obj = {
@@ -475,31 +475,27 @@ export default {
         //最高高評価の値を返す[呼び出し回数1]ok 1
         searchBestAnswer(answers) {
             let max_value = 0;
-            for (let item in answers) {
-                //ここがうまくいっていない
-                if (max_value < item.answer_value) {
-                    max_value = item.answer_value;
+            for (let index in answers) {
+                if (max_value < answers[index].answer_value) {
+                    max_value = answers[index].answer_value;
                 }
             }
-            console.log('max_value', max_value)
-            //bestanswerを保存
-            for (let best in answers) {
-                if (best.answer_bad_value < 5 && best.answer_value == max_value) {
-                    best_answers.push[best];
-                }
-            }
-            console.log('best answer', best_answers)
+            return max_value;
         },
-        //このページ内のanswer_bestを更新する[呼び出し回数1] 2
+        //ベストアンサーを更新する[呼び出し回数1]ok 2
         autoBestAnswer() {
             const max_value = this.searchBestAnswer(this.any_answer);
             for (let best in this.any_answer) {
-                //低評価5未満かつ高評価Max
+                //低評価5未満かつ高評価TOP
                 if (this.any_answer[best].answer_bad_value < 5 && this.any_answer[best].answer_value == max_value) {
                     //ベストアンサーの更新
                     this.any_answer[best].answer_best = true;
                 }
+                else {
+                    this.any_answer[best].answer_best = false;
+                }
             }
+            console.log('best answer check', this.any_answer)
         },
 
         //解決機能
@@ -680,7 +676,7 @@ export default {
             console.log("回答者への報酬完了")
         },
         log() {
-            console.log("回答データの初期状態確認",this.answer_obj)
+            this.autoBestAnswer()
         },
     }
 }
