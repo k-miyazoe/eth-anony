@@ -15,8 +15,6 @@ services:
       - ./front:/app/
     env_file:
       - ./env_files/front.env
-    expose:
-      - 3000
     networks:
       - app_net
 
@@ -52,8 +50,8 @@ services:
       timeout: 20s
     volumes:
       - ./mysql/db:/var/lib/mysql #初期データをマウントする場所
-    ports:
-      - 3306:3306
+    expose:
+      - 3306
     env_file:
       - ./env_files/db.env
     networks:
@@ -67,7 +65,6 @@ services:
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/uwsgi_params:/etc/nginx/uwsgi_params #add
-      - ./front:/frontend #add
       - ./front/dist/:/var/www/html
     restart: always
     depends_on:
