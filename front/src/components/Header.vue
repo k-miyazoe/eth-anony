@@ -11,6 +11,16 @@
             マイページ
           </router-link>
         </v-btn>
+        <v-btn>
+          <router-link to='/notices'>
+            お知らせ
+          </router-link>
+        </v-btn>
+        <v-btn>
+          <router-link to='/ranking'>
+            Ranking
+          </router-link>
+        </v-btn>
       </div>
       <div v-else>
         <v-btn>

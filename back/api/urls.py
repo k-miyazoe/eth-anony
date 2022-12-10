@@ -7,6 +7,7 @@ name="api"
 urlpatterns = [
     #User
     path('users/', UserList.as_view()),
+    path('get-user/<slug:group>', UserGet.as_view()),
     path('create-user/',UserCreate.as_view()),
     path('users/<pk>', UserRetrieveUpdate.as_view()),
     path('user-delete/<pk>/', UserDelete.as_view()),
@@ -15,7 +16,6 @@ urlpatterns = [
     
     #Question
     path('get-question/<slug:flag>/<slug:group>', QuestionList.as_view()),
-    #path('get-question/<slug:flag>/', QuestionList.as_view()),
     path('get-question/<pk>', QuestionGet.as_view()),
     path('create-question/', QuestionCreate.as_view()),
     path('update-question/<pk>', QuestionUpdate.as_view()),

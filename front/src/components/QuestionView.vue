@@ -3,6 +3,7 @@
         <Header />
         <v-main>
             <NavHelpBar />
+            <SubTitle />
             <v-container fluid>
                 <!-- <v-btn color="primary" @click="log">
                     log button
@@ -170,6 +171,7 @@ import router from "../router";
 import Swal from "sweetalert2";
 import Header from "../components/Header.vue";
 import NavHelpBar from "../components/NavigationHelpBar.vue";
+import SubTitle from "../components/SubTitle.vue";
 import header from "/src/node/axios";
 import { User, Question, Answer } from "/src/node/class";
 
@@ -194,6 +196,7 @@ export default {
     components: {
         Header,
         NavHelpBar,
+        SubTitle,
     },
     data() {
         return {
@@ -223,7 +226,6 @@ export default {
         await this.getOneQuestion()
         await this.getAnyAnswer()
         await this.addViewsQuestion()
-        //await this.checkHasBestAnswer()
     },
     methods: {
         checkToken() {
@@ -299,7 +301,6 @@ export default {
             //console.log('回答投稿', g_answer_flag);
             this.pointDown(user_id, g_answer_flag);
             await QuestionClass.addNumberOfAnswers(question_id, g_answer_flag);
-            //console.log('回答数増加', g_answer_flag);
             // this.sendEmailQuestioner(this.answer_obj.answer_content, g_answer_flag);
             // console.log('メール通知', g_answer_flag);
             //画面更新

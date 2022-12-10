@@ -6,6 +6,7 @@
     </v-btn> -->
     <v-main>
       <NavHelpBar />
+      <SubTitle />
       <v-container>
         <v-card class="mt-12">
           <v-card-title>
@@ -70,6 +71,7 @@ import Swal from "sweetalert2";
 import VueLoading from 'vue-loading-template'
 import Header from "../components/Header.vue";
 import NavHelpBar from "../components/NavigationHelpBar.vue"
+import SubTitle from "../components/SubTitle.vue";
 import header from "/src/node/axios";
 import { User, Question } from "/src/node/class";
 
@@ -92,6 +94,7 @@ export default {
     VueLoading,
     Header,
     NavHelpBar,
+    SubTitle
   },
   data() {
     return {

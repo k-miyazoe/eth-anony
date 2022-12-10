@@ -2,9 +2,8 @@ from pydoc import render_doc
 from rest_framework import generics, permissions
 from .models import User,Question,Answer,QuestionLike,AnswerLike,QuestionBad,AnswerBad
 from .serializers import UserSerializer,QuestionSerializer,AnswerSerializer
-from web3 import Web3
 import environ,json
-from django.http import JsonResponse, HttpResponseServerError
+from django.http import JsonResponse,HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.db.models import F
@@ -12,14 +11,22 @@ from django.db.models import F
 env = environ.Env()
 env.read_env('back.env')
 
-#remote provider sets 使用していない
-w3 = Web3(Web3.HTTPProvider(env('GETH_REMOTE_PROVIDERS')))
-
 class UserList(generics.ListAPIView):
     queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
     #管理者のみユーザーリスト確認可能
     #permission_classes = (permissions.IsAdminUser,)
+
+class UserGet(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    
+    def get_queryset(self):
+        group = self.kwargs.get("group")
+        if group == "real_name":
+            return User.objects.filter(user_group=True)
+        else:
+            return User.objects.filter(user_group=False)
 
 class UserCreate(generics.CreateAPIView):
     queryset = User.objects.all()
