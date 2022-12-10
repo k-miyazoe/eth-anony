@@ -7,7 +7,7 @@
             <v-container fluid>
                 <v-card v-for="item in ranking_list" :key="item.id" class="pa-md-4 mx-lg-auto" width="750px">
                     <v-card-text>{{ item.user_ranking }}位 {{ item.user_email }}{{ item.user_name
-                    }}</v-card-text>
+                    }} {{ item.user_point }}point</v-card-text>
                 </v-card>
             </v-container>
         </v-main>
