@@ -10,6 +10,7 @@
                     <v-card-title class="red">重要</v-card-title>
                     <v-card-text>成績評価の際は匿名アカウントから実名アカウントにポイントを全て集めてください．実名アカウントのポイント順で成績加点がもらえます．</v-card-text>
                     <v-card-text>12/9からは偶数番号の人は実名アカウントで、奇数番号の人は匿名アカウントで質問・回答してください</v-card-text>
+                    <v-card-text>100point以下の人は、成績加点はありません．</v-card-text>
                 </v-card>
                 <v-card>
                     <v-card-subtitle class="green">修正済み</v-card-subtitle>
