@@ -4,6 +4,8 @@ import HomeView from "../views/HomeView.vue";
 import SignUp from "../views/SignUp.vue";
 import SignIn from "../views/SignIn.vue";
 import MyPage from "../views/MyPage.vue";
+import Ranking from "../views/Ranking.vue";
+import Notices from "../views/Notices.vue";
 import Question from "../components/Question.vue";
 import QuestionView from "../components/QuestionView.vue";
 import NotFoundComponent from "../components/NotFoundComponent.vue";
@@ -40,6 +42,16 @@ const routes = [
     component: MyPage,
     props: true,
     name: "mypage",
+  },
+  {
+    path: "/ranking",
+    component: Ranking,
+    name: "ranking",
+  },
+  {
+    path: "/notices",
+    component: Notices,
+    name: "notices",
   },
   {
     path: "*",
