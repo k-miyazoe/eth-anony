@@ -6,9 +6,11 @@ import SignIn from "../views/SignIn.vue";
 import MyPage from "../views/MyPage.vue";
 import Ranking from "../views/Ranking.vue";
 import Notices from "../views/Notices.vue";
+import SignUPOnlyRealName from "../views/SignUpOnlyRealName.vue";
 import Question from "../components/Question.vue";
 import QuestionView from "../components/QuestionView.vue";
 import NotFoundComponent from "../components/NotFoundComponent.vue";
+
 
 Vue.use(VueRouter);
 
@@ -54,6 +56,11 @@ const routes = [
     name: "notices",
   },
   {
+    path: "/signup-only-realname",
+    component: SignUPOnlyRealName,
+    name: "signup-only-realname",
+  },
+  {
     path: "*",
     component: NotFoundComponent,
     name: "notFound",
@@ -66,7 +73,6 @@ const routes = [
 ];
 
 const router = new VueRouter({
-  // mode: 'history',
   routes,
 });
 

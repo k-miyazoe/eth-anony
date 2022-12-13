@@ -8,10 +8,6 @@
             <v-card-title>
               <span class="headline">サインイン</span>
             </v-card-title>
-            <!-- <v-card-subtitle>
-              <span class="notes-text">学籍番号が偶数の方は実名アカウントで、奇数の方は匿名アカウントでサインインしてください</span></v-card-subtitle>
-            <v-spacer /> -->
-
             <v-card-text>
               <v-layout row fill-height justify-center align-center v-if="loading">
                 <v-progress-circular :size="50" color="primary" indeterminate />
@@ -32,6 +28,10 @@
           </v-card>
           <router-link to='/signup'>
             アカウントを登録していない方はこちらから
+          </router-link>
+          <v-divider></v-divider>
+          <router-link to='/signup-only-realname'>
+            TAまたは匿名アカウントから実名アカウントにpointの移動ができない人はこちら
           </router-link>
         </v-flex>
       </v-layout>
