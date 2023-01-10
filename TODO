@@ -1,10 +1,12 @@
 
 Task:
+  ☐ 開発用と本番用の環境変数ファイルをそれぞれ削除+ymlファイルに指定する@high
   ☐ gethが落ちた時のpointデータのバックアップ @high
-  ☐ dockerの本番環境と開発環境の使い分け
+  ☐ dockerの本番環境と開発環境の使い分け@now
   ☐ 解決済みの質問も表示する[Home.vue+ ResolvedQuestion.vue]@low
   ☐ getStudentNumberを新しいやつをSignUpに反映(リファクタリング)
   ☐ 今後の大学の停電時期の把握
+  
   Done:
     ✔ 注意書きにスペースのことを追加 匿名のポイントは，成績評価時には移動が必要も記述 @done(22-12-13 15:13)
   TaskMemo:

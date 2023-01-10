@@ -1,49 +1,46 @@
 version: "3"
 
 services:
-  frontend:
-    tty: true
-    stdin_open: true
+  nginx:
     build:
       context: .
-      dockerfile: ./front/Dockerfile.dev
-    image: front-eth-dev-img
-    container_name: front-eth-dev-ctn
-    ports:
-      - 8080:8080
-    volumes:
-      - ./front:/app/
+      dockerfile: ./front/Dockerfile.prod
+    image: nginx-eth-img
+    container_name: nginx-eth-ctn
     env_file:
       - ./env_files/front.env
+    ports:
+      - 8040:80
+    #restart: always
+    #変更する
     networks:
-      - app_net_dev
+      - app_net_eth
+    depends_on:
+      - backend
 
   backend:
     tty: true
     stdin_open: true
     build:
       context: .
-      dockerfile: ./back/Dockerfile.dev
-    image: back-eth-dev
-    container_name: back-eth-dev
-    ports:
-      - 8001:8001
-    expose:
-      - 8001
-    volumes:
-      - ./back:/run/
+      dockerfile: ./back/Dockerfile.prod
+    image: back-eth-img
+    container_name: back-eth-ctn
     depends_on:
       mysql:
         condition: service_healthy
+    expose:
+      - 8001
+    #変更する
     networks:
-      - app_net_dev
-
+      - app_net_eth
+    
   mysql:
     build:
       context: .
       dockerfile: ./mysql/Dockerfile
-    image: db-eth-dev-img
-    container_name: db-eth-dev-ctn
+    image: mysql-eth-img
+    container_name: mysql-eth-ctn
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 1s
@@ -56,9 +53,10 @@ services:
       - 3306
     env_file:
       - ./env_files/db.env
+    #変更する
     networks:
-      - app_net_dev
+      - app_net_eth
 
 networks:
-  app_net_dev:
+  app_net_eth:
     driver: bridge
