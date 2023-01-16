@@ -6,6 +6,7 @@
       <v-spacer />
       <v-row class="justify-center">
         <v-btn @click="routerPushCreateQuestion">質問する</v-btn>
+        <v-btn><router-link to='/resolved-questions'>解決済みの質問一覧</router-link></v-btn>
       </v-row>
       <v-container fluid>
         <v-card v-for="item in unresolved_question" :key="item.id" class="pa-md-4 mx-lg-auto" width="750px">
