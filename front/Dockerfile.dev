@@ -2,8 +2,6 @@ FROM node:14
 
 WORKDIR /app
 
-COPY ./front/package*.json ./
+COPY package*.json ./
 
-RUN npm install
-
-CMD [ "npm", "run", "serve" ]
+CMD [ "sh", "entrypoint-front.sh" ]

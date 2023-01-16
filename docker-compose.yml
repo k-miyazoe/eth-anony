@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  frontend:
+  front:
     tty: true
     stdin_open: true
     build:
@@ -18,7 +18,7 @@ services:
     networks:
       - app_net_dev
 
-  backend:
+  back:
     tty: true
     stdin_open: true
     build:
@@ -44,6 +44,7 @@ services:
       dockerfile: ./mysql/Dockerfile
     image: db-eth-dev-img
     container_name: db-eth-dev-ctn
+    platform: linux/x86_64    # ← この設定を追加する
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 1s

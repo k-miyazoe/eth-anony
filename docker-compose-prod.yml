@@ -41,6 +41,7 @@ services:
       dockerfile: ./mysql/Dockerfile
     image: mysql-eth-img
     container_name: mysql-eth-ctn
+    platform: linux/x86_64
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 1s
