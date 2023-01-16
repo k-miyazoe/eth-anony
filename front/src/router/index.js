@@ -10,7 +10,8 @@ import SignUPOnlyRealName from "../views/SignUpOnlyRealName.vue";
 import Question from "../components/Question.vue";
 import QuestionView from "../components/QuestionView.vue";
 import NotFoundComponent from "../components/NotFoundComponent.vue";
-
+import ResolvedQuestion from "../components/ResolvedQuestion.vue";
+import ResolvedQuestionView from "../components/ResolvedQuestionView.vue";
 
 Vue.use(VueRouter);
 
@@ -32,12 +33,22 @@ const routes = [
     path: "/create-question",
     component: Question,
   },
+  {
+    path: "/resolved-questions",
+    component: ResolvedQuestion,
+  },
   //動的に質問閲覧ページを表示する必要がある
   {
     path: "/question/:id",
     component: QuestionView,
     props: true,
     name: "question-detail",
+  },
+  {
+    path: "/resolved-question/:id",
+    component: ResolvedQuestionView,
+    props: true,
+    name: "resolved-question-detail",
   },
   {
     path: "/mypage",
