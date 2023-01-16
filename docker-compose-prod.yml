@@ -12,7 +12,6 @@ services:
     ports:
       - 8040:80
     #restart: always
-    #変更する
     networks:
       - app_net_eth
     depends_on:

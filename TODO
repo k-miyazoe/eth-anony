@@ -3,16 +3,16 @@ Task:
   ☐ 開発用と本番用の環境変数ファイルをそれぞれ削除+ymlファイルに指定する@high
   ☐ gethが落ちた時のpointデータのバックアップ @high
   ☐ メール機能を追加 @high
-  ☐ 解決済みの質問の詳細ページ@now
-  ☐ 解決済みの質問も表示する apiの作成[Home.vue+ ResolvedQuestion.vue]@low
   ☐ getStudentNumberを新しいやつをSignUpに反映(リファクタリング)
   ☐ 今後の大学の停電時期の把握
-  ☐ 開発のymlのコンテナの名前からctnをカットする
-  ☐ backendのexposeを削除
-  ☐ envfileのフォルダーを開発用と本番用に分けないといけないか考える
+  ☐ 開発のymlのコンテナの名前からctnをカットする(開発yml)
+  ☐ backendのexposeを削除(開発yml)
+  ☐ envfileのフォルダーを開発用と本番用に分けないといけないか考える(本番のnginx(vue)のapiのurlは変わるかも?)
   ☐ DRFのviews.pyでsqlを書いて、テスト
   
   Done:
+    ✔ 解決済みの質問の詳細ページ@now @done(23-01-16 14:13)
+    ✔ 解決済みの質問も表示する [Home.vue+ ResolvedQuestion.vue]@low @done(23-01-16 14:13)
     ✔ dockerの本番環境と開発環境の使い分け@now @done(23-01-16 12:07)
     ✔ 新機能が反映されない場合は，シークレットモードでページを開く(おしらせに追加) @done(23-01-16 12:06)
     ✔ 質問・回答のページに現在利用できるアカウントのおしらせ@now @done(23-01-16 12:04)
