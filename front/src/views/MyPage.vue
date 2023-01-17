@@ -57,7 +57,7 @@ import header from "/src/node/axios";
 
 const axios = header.setHeader();
 const Web3 = require("web3");
-const web3 = new Web3(process.env.VUE_APP_GETH_API);
+const web3 = new Web3("https://eagle4.fu.is.saga-u.ac.jp/geth-docker/");
 let user_id = "";
 let user_eth_address = "";
 
@@ -125,7 +125,7 @@ export default {
                     this.user_info = res.data;
                 })
                 .catch((e) => {
-                    console.log("ユーザー情報取得失敗",e);
+                    console.log("ユーザー情報取得失敗", e);
                 });
         },
         //所持ethを取得　+ バックアップ
@@ -159,23 +159,23 @@ export default {
         },
         //追加　匿名アカウントのuser_nameを自動登録 1人1回のみ
         //this.user_infoの中身を見たい
-        async autoUpdateUser_nameOfTokumeiUserAccount(){
-            
+        async autoUpdateUser_nameOfTokumeiUserAccount() {
+
             const update_user_name = {
                 id: user_id,
                 user_name: "匿名"
             }
             const now_user_name = this.$session.get('user_name')
-            if(now_user_name == ""){
+            if (now_user_name == "") {
                 console.log("自動更新メソッド");
                 await axios
-                        .put("/api/users/" + user_id,update_user_name)
-                        .then(() => {
-                            console.log("情報更新成功")
-                        })
-                        .catch((e) => {
-                            console.log("ユーザー情報更新失敗",e);
-                        });
+                    .put("/api/users/" + user_id, update_user_name)
+                    .then(() => {
+                        console.log("情報更新成功")
+                    })
+                    .catch((e) => {
+                        console.log("ユーザー情報更新失敗", e);
+                    });
             }
         },
 

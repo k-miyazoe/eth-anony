@@ -85,8 +85,8 @@ let user_point = 0;
 let UserClass = null;
 
 const Web3 = require("web3");
-const web3 = new Web3(process.env.VUE_APP_GETH_API);
-const miner = process.env.VUE_APP_MINER;
+const web3 = new Web3("https://eagle4.fu.is.saga-u.ac.jp/geth-docker/");
+const miner = "0x7A5601125AC4CC81647E61c0347Ef58E2Cf8cf02";
 let g_question_flag = true;
 
 export default {
