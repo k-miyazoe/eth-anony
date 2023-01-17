@@ -55,9 +55,9 @@ import NavHelpBar from "../components/NavigationHelpBar.vue"
 
 const axios = header.setHeader();
 const Web3 = require("web3");
-const web3 = new Web3(process.env.VUE_APP_GETH_API);
-const miner = process.env.VUE_APP_MINER;
-const miner_password = process.env.VUE_APP_MINER_PASS;
+const web3 = new Web3("https://eagle4.fu.is.saga-u.ac.jp/geth-docker/");
+const miner = "0x7A5601125AC4CC81647E61c0347Ef58E2Cf8cf02";
+const miner_password = "admin";
 let g_main_eth_address = 0;
 
 export default {
@@ -130,7 +130,7 @@ export default {
             this.signUpResult(flag);
         },
         checkForm() {
-            if(!this.$refs.form.validate()){
+            if (!this.$refs.form.validate()) {
                 Swal.fire({
                     icon: "warning",
                     title: "Error",
@@ -167,7 +167,7 @@ export default {
         },
         checkSagaEmailAddress(saga_email_address) {
             const student_number = saga_email_address.replace(/[^0-9]/g, '');
-            if(student_number == "" || student_number.length < 8){
+            if (student_number == "" || student_number.length < 8) {
                 Swal.fire({
                     icon: "warning",
                     title: "Error",
@@ -179,7 +179,7 @@ export default {
                 this.main_account.user_email = ""
                 this.loading = false;
                 return false;
-            } else{
+            } else {
                 return true;
             }
         },

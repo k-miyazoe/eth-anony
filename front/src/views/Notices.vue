@@ -3,7 +3,9 @@
         <Header />
         <v-main>
             <NavHelpBar />
-            <h1>お知らせ</h1>
+            <v-row class="justify-center">
+                <p>お知らせ</p>
+            </v-row>
             <v-spacer />
             <v-container fluid>
                 <v-card class="pa-md-4 mx-lg-auto" width="750px">
